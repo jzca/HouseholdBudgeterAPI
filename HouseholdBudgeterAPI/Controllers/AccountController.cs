@@ -125,7 +125,7 @@ namespace HouseholdBudgeterAPI.Controllers
 
             IdentityResult result = await UserManager.ChangePasswordAsync(User.Identity.GetUserId(), model.OldPassword,
                 model.NewPassword);
-            
+
             if (!result.Succeeded)
             {
                 return GetErrorResult(result);
@@ -258,9 +258,9 @@ namespace HouseholdBudgeterAPI.Controllers
             if (hasRegistered)
             {
                 Authentication.SignOut(DefaultAuthenticationTypes.ExternalCookie);
-                
-                 ClaimsIdentity oAuthIdentity = await user.GenerateUserIdentityAsync(UserManager,
-                    OAuthDefaults.AuthenticationType);
+
+                ClaimsIdentity oAuthIdentity = await user.GenerateUserIdentityAsync(UserManager,
+                   OAuthDefaults.AuthenticationType);
                 ClaimsIdentity cookieIdentity = await user.GenerateUserIdentityAsync(UserManager,
                     CookieAuthenticationDefaults.AuthenticationType);
 
@@ -368,7 +368,7 @@ namespace HouseholdBudgeterAPI.Controllers
             result = await UserManager.AddLoginAsync(user.Id, info.Login);
             if (!result.Succeeded)
             {
-                return GetErrorResult(result); 
+                return GetErrorResult(result);
             }
             return Ok();
         }
@@ -382,6 +382,80 @@ namespace HouseholdBudgeterAPI.Controllers
             }
 
             base.Dispose(disposing);
+        }
+
+        //
+        // POST: /Account/ForgotPassword
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("ForgotPassword")]
+        public async Task<IHttpActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await UserManager.FindByNameAsync(model.Email);
+                if (user == null)
+                {
+                    // Don't reveal that the user does not exist or is not confirmed
+                    ModelState.AddModelError("Email", "The user does not exist");
+                    return BadRequest(ModelState);
+                }
+
+                // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
+                // Send an email with this link
+
+                var eService = new EmailService();
+                string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
+                var userEmail = UserManager.GetEmail(user.Id);
+                var callbackUrl = Url.Link("ResetPassword", null);
+                if (userEmail != null)
+                {
+                    eService.Send(userEmail,
+                        "Reset Password",
+                        $"Code for reseting your password: [<div>{code}</div>], via: <a href=\"" + callbackUrl + "\">here</a>");;
+                }
+                else
+                {
+                    return InternalServerError();
+                }
+
+                return Ok();
+
+            }
+            else
+            {
+                return BadRequest(ModelState);
+            }
+
+        }
+
+        //
+        // POST: /Account/ResetPassword
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("ResetPassword", Name = "ResetPassword")]
+        public async Task<IHttpActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+
+                return BadRequest(ModelState);
+            }
+            var user = await UserManager.FindByNameAsync(model.Email);
+            if (user == null)
+            {
+                ModelState.AddModelError("Email", "The user does not exist");
+                return BadRequest(ModelState);
+            }
+            var result = await UserManager.ResetPasswordAsync(user.Id, model.Code, model.Password);
+            if (result.Succeeded)
+            {
+                return Ok();
+            }
+            else
+            {
+                return InternalServerError();
+            }
         }
 
         #region Helpers
