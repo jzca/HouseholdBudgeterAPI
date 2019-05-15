@@ -23,6 +23,37 @@ namespace HouseholdBudgeterAPI.Models.Domain
         public string OwnerId { get; set; }
         public virtual List<Category> Categories { get; set; }
         public virtual List<ApplicationUser> JoinedUsers { get; set; }
-        public virtual List<ApplicationUser> InvitedUsers  { get; set; }
+        public virtual List<ApplicationUser> InvitedUsers { get; set; }
+
+        public bool IsOwner(string userId)
+        {
+            return OwnerId == userId;
+        }
+
+        public bool IsNotOwner(string userId)
+        {
+            return OwnerId != userId;
+        }
+
+        public bool AlreadyInvitedByEmail(string email)
+        {
+            return InvitedUsers.Any(p => p.Email == email);
+        }
+
+        public bool AlreadyJoinedByEmail(string email)
+        {
+            return JoinedUsers.Any(p => p.Email == email);
+        }
+
+        public bool IsInvitedById(string userId)
+        {
+            return InvitedUsers.Any(p => p.Id == userId);
+        }
+
+        public bool IsJoinedById(string userId)
+        {
+            return JoinedUsers.Any(p => p.Id == userId);
+        }
+
     }
 }

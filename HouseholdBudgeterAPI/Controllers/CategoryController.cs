@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using HouseholdBudgeterAPI.Models;
 using HouseholdBudgeterAPI.Models.BindingModel;
 using HouseholdBudgeterAPI.Models.Domain;
+using HouseholdBudgeterAPI.Models.Helper;
 using HouseholdBudgeterAPI.Models.ViewModel;
 using Microsoft.AspNet.Identity;
 using System;
@@ -17,11 +18,17 @@ namespace HouseholdBudgeterAPI.Controllers
     [Authorize]
     public class CategoryController : ApiController
     {
-        private ApplicationDbContext DbContext;
+        private readonly ApplicationDbContext DbContext;
+        private readonly HouseholdHelper HouseholdHelper;
+        private readonly UserHelper UserHelper;
+        private readonly CategoryHelper CategoryHelper;
 
         public CategoryController()
         {
             DbContext = new ApplicationDbContext();
+            HouseholdHelper = new HouseholdHelper(DbContext);
+            UserHelper = new UserHelper(DbContext);
+            CategoryHelper = new CategoryHelper(DbContext);
         }
 
         [HttpPost]
@@ -32,10 +39,7 @@ namespace HouseholdBudgeterAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            var householdOwnerId = DbContext.Households
-                .Where(p => p.Id == id)
-                .Select(p => p.OwnerId)
-                .FirstOrDefault();
+            var householdOwnerId = HouseholdHelper.GetHhOwnerIdByHhId(id);
 
             if (householdOwnerId == null)
             {
@@ -72,9 +76,7 @@ namespace HouseholdBudgeterAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            var category = DbContext.Categories
-               .Where(p => p.Id == id)
-               .FirstOrDefault();
+            var category = CategoryHelper.GetByIdWithHhOwnerId(id);
 
             if (category == null)
             {
@@ -116,7 +118,9 @@ namespace HouseholdBudgeterAPI.Controllers
             var currentUserId = User.Identity.GetUserId();
             bool isJoined = DbContext
                 .Households
-                .Any(p => p.JoinedUsers.Any(b=> b.Id == currentUserId));
+                .Where(p => p.Id == id)
+                .Any(a => a.JoinedUsers
+                .Any(b=> b.Id == currentUserId));
 
             if (!isJoined)
             {
@@ -129,8 +133,7 @@ namespace HouseholdBudgeterAPI.Controllers
         [HttpDelete]
         public IHttpActionResult Delete(int id)
         {
-            var category = DbContext.Categories
-                .FirstOrDefault(p => p.Id == id);
+            var category = CategoryHelper.GetByIdWithHhOwnerId(id);
 
             if (category == null)
             {

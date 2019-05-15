@@ -3,8 +3,10 @@ using AutoMapper.QueryableExtensions;
 using HouseholdBudgeterAPI.Models;
 using HouseholdBudgeterAPI.Models.BindingModel;
 using HouseholdBudgeterAPI.Models.Domain;
+using HouseholdBudgeterAPI.Models.Helper;
 using HouseholdBudgeterAPI.Models.ViewModel;
 using Microsoft.AspNet.Identity;
+using System.Data.Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,11 +19,15 @@ namespace HouseholdBudgeterAPI.Controllers
     [Authorize]
     public class HouseholdController : ApiController
     {
-        private ApplicationDbContext DbContext;
+        private readonly ApplicationDbContext DbContext;
+        private readonly HouseholdHelper HouseholdHelper;
+        private readonly UserHelper UserHelper;
 
         public HouseholdController()
         {
             DbContext = new ApplicationDbContext();
+            HouseholdHelper = new HouseholdHelper(DbContext);
+            UserHelper = new UserHelper(DbContext);
         }
 
 
@@ -34,11 +40,13 @@ namespace HouseholdBudgeterAPI.Controllers
             }
 
             var appUserId = User.Identity.GetUserId();
+            var user = UserHelper.GetUserById(appUserId);
             var household = Mapper.Map<Household>(model);
             household.OwnerId = appUserId;
             household.DateCreated = DateTime.Now;
 
             DbContext.Households.Add(household);
+            household.JoinedUsers.Add(user);
             DbContext.SaveChanges();
 
             var viewModel = Mapper.Map<HouseholdViewModel>(household);
@@ -53,8 +61,7 @@ namespace HouseholdBudgeterAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            var household = DbContext.Households
-                .FirstOrDefault(p => p.Id == id);
+            var household = HouseholdHelper.GetById(id);
 
             if (household == null)
             {
@@ -62,7 +69,7 @@ namespace HouseholdBudgeterAPI.Controllers
             }
 
             var currentUserId = User.Identity.GetUserId();
-            var IsOwner = household.OwnerId == currentUserId;
+            var IsOwner = household.IsOwner(currentUserId);
             if (IsOwner)
             {
                 Mapper.Map(model, household);
@@ -108,8 +115,7 @@ namespace HouseholdBudgeterAPI.Controllers
         public IHttpActionResult InviteUserByHhIdEmail(int id, string email)
         {
 
-            var household = DbContext.Households
-            .FirstOrDefault(p => p.Id == id);
+            var household = HouseholdHelper.GetByIdWithInvitedJoinedUsers(id);
 
             if (household == null)
             {
@@ -117,23 +123,22 @@ namespace HouseholdBudgeterAPI.Controllers
             }
 
             var currentUserId = User.Identity.GetUserId();
-            var IsNotOwner = household.OwnerId != currentUserId;
+            var IsNotOwner = household.IsNotOwner(currentUserId);
 
             if (IsNotOwner)
             {
                 return Unauthorized();
             }
 
-            var user = DbContext.Users
-                .FirstOrDefault(p => p.Email == email);
+            var user = UserHelper.GetUserByEmail(email);
 
             if (user == null)
             {
                 return NotFound();
             }
 
-            var alreadyInvited = household.InvitedUsers.Any(p => p.Email == email);
-            var alreadyJoined = household.JoinedUsers.Any(p => p.Email == email);
+            var alreadyInvited = household.AlreadyInvitedByEmail(email);
+            var alreadyJoined = household.AlreadyJoinedByEmail(email);
 
             if (alreadyInvited)
             {
@@ -168,8 +173,7 @@ namespace HouseholdBudgeterAPI.Controllers
         [HttpPost]
         public IHttpActionResult JoinHouseholdById(int id)
         {
-            var household = DbContext.Households
-            .FirstOrDefault(p => p.Id == id);
+            var household = HouseholdHelper.GetByIdWithInvitedJoinedUsers(id);
 
             if (household == null)
             {
@@ -177,16 +181,16 @@ namespace HouseholdBudgeterAPI.Controllers
             }
 
             var currentUserId = User.Identity.GetUserId();
-            var isInvited = household.InvitedUsers.Any(p => p.Id == currentUserId);
-            var user = DbContext.Users
-                .FirstOrDefault(p => p.Id == currentUserId);
+            var isInvited = household.IsInvitedById(currentUserId);
+            var user = UserHelper.GetUserById(currentUserId);
 
             if (user == null)
             {
                 return NotFound();
             }
 
-            var alreadyJoined = household.JoinedUsers.Any(p => p.Id == currentUserId);
+            var alreadyJoined = household.IsJoinedById(currentUserId);
+
 
             if (alreadyJoined)
             {
@@ -216,8 +220,7 @@ namespace HouseholdBudgeterAPI.Controllers
         [HttpPost]
         public IHttpActionResult Leave(int id)
         {
-            var household = DbContext.Households
-                .FirstOrDefault(p => p.Id == id);
+            var household = HouseholdHelper.GetByIdWithJoinedUsers(id);
 
             if (household == null)
             {
@@ -226,15 +229,14 @@ namespace HouseholdBudgeterAPI.Controllers
 
             var currentUserId = User.Identity.GetUserId();
             var IsOwner = household.OwnerId == currentUserId;
-            var isJoined = household.JoinedUsers.Any(p => p.Id == currentUserId);
+            var isJoined = household.IsJoinedById(currentUserId);
 
             if (IsOwner || !isJoined)
             {
                 return Unauthorized();
             }
 
-            var user = DbContext.Users
-                .FirstOrDefault(p => p.Id == currentUserId);
+            var user = UserHelper.GetUserById(currentUserId);
 
             if (user == null)
             {
@@ -251,8 +253,7 @@ namespace HouseholdBudgeterAPI.Controllers
         [HttpDelete]
         public IHttpActionResult Delete(int id)
         {
-            var household = DbContext.Households
-                .FirstOrDefault(p => p.Id == id);
+            var household = HouseholdHelper.GetById(id);
 
             if (household == null)
             {
@@ -260,7 +261,7 @@ namespace HouseholdBudgeterAPI.Controllers
             }
 
             var currentUserId = User.Identity.GetUserId();
-            var IsOwner = household.OwnerId == currentUserId;
+            var IsOwner = household.IsOwner(currentUserId);
 
             if (!IsOwner)
             {

@@ -225,6 +225,7 @@
     <Compile Include="Models\Domain\Category.cs" />
     <Compile Include="Models\Domain\Household.cs" />
     <Compile Include="Models\EmailService.cs" />
+    <Compile Include="Models\Helper\AppHelper.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ViewModel\CategoryViewModel.cs" />
     <Compile Include="Models\ViewModel\HouseholdViewModel.cs" />
