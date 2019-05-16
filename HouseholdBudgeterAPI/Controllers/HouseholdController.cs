@@ -181,6 +181,14 @@ namespace HouseholdBudgeterAPI.Controllers
             }
 
             var currentUserId = User.Identity.GetUserId();
+
+            var IsOwner = household.IsOwner(currentUserId);
+
+            if (IsOwner)
+            {
+                return Unauthorized();
+            }
+
             var isInvited = household.IsInvitedById(currentUserId);
             var user = UserHelper.GetUserById(currentUserId);
 
