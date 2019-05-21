@@ -12,6 +12,7 @@ namespace HouseholdBudgeterAPI.Models.Domain
             Categories = new List<Category>();
             JoinedUsers = new List<ApplicationUser>();
             InvitedUsers = new List<ApplicationUser>();
+            BankAccounts = new List<BankAccount>();
         }
 
         public int Id { get; set; }
@@ -24,6 +25,7 @@ namespace HouseholdBudgeterAPI.Models.Domain
         public virtual List<Category> Categories { get; set; }
         public virtual List<ApplicationUser> JoinedUsers { get; set; }
         public virtual List<ApplicationUser> InvitedUsers { get; set; }
+        public virtual List<BankAccount> BankAccounts { get; set; }
 
         public bool IsOwner(string userId)
         {

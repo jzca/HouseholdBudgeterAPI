@@ -49,6 +49,9 @@ namespace HouseholdBudgeterAPI.Models
 
         public DbSet<Household> Households { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<BankAccount> BankAccounts { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
+
 
         public static ApplicationDbContext Create()
         {
@@ -68,6 +71,11 @@ namespace HouseholdBudgeterAPI.Models
                .HasMany(p => p.JoinedHouseholds)
                .WithMany(p => p.JoinedUsers)
                .Map(p => p.ToTable("JoinedUsersHouseholds"));
+
+            modelBuilder.Entity<Household>()
+                .HasMany(p => p.Categories)
+                .WithRequired(p => p.Household)
+                .WillCascadeOnDelete(false);
         }
     }
 }

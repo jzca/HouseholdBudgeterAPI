@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Data.Entity;
+using System.Web.Http;
 
 namespace HouseholdBudgeterAPI.Models.Helper
 {
@@ -31,6 +32,14 @@ namespace HouseholdBudgeterAPI.Models.Helper
                 .Include(p => p.JoinedUsers)
                 .FirstOrDefault(p => p.Id == id);
         }
+
+        public Household GetByIdWithCategories(int id)
+        {
+            return DbContext.Households
+                .Include(p => p.Categories)
+                .FirstOrDefault(p => p.Id == id);
+        }
+
 
         public Household GetByIdWithInvitedJoinedUsers(int id)
         {
@@ -90,9 +99,16 @@ namespace HouseholdBudgeterAPI.Models.Helper
         public Category GetByIdWithHhOwnerId(int id)
         {
             return DbContext.Categories
-               .Include(p=> p.Household)
+               .Include(p => p.Household)
                .Where(p => p.Id == id)
                .FirstOrDefault();
+        }
+
+        public List<Category> GetAllByHhId(int id)
+        {
+            return DbContext.Categories
+               .Where(p => p.HouseholdId == id)
+               .ToList();
         }
 
     }
