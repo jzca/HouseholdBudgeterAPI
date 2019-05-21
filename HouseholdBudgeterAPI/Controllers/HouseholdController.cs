@@ -276,17 +276,12 @@ namespace HouseholdBudgeterAPI.Controllers
                 return Unauthorized();
             }
             
-            //var AllBelongedCat = CategoryHelper.GetAllByHhId(id);
-
             var AllBelongedCat = household.Categories;
 
             if (AllBelongedCat.Any())
             {
                 DbContext.Categories.RemoveRange(AllBelongedCat);
             }
-
-            //var numIndexCat= household.Categories.Count()-1;
-            //household.Categories.RemoveRange(0, numIndexCat);
 
             DbContext.Households.Remove(household);
             DbContext.SaveChanges();

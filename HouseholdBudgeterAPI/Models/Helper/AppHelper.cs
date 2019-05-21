@@ -79,6 +79,25 @@ namespace HouseholdBudgeterAPI.Models.Helper
             return DbContext.Users
                 .FirstOrDefault(p => p.Email == email);
         }
+
+        public List<ApplicationUser> GetJoinedUsersByBaId(int BaId)
+        {
+            return DbContext.BankAccounts.
+                Where(p=> p.Id == BaId)
+                .SelectMany(p => p.Household.JoinedUsers)
+                .ToList();
+        }
+
+        public List<ApplicationUser> GetJoinedUsersByBaIdWithHh(int BaId)
+        {
+            return DbContext.BankAccounts.
+                Where(p => p.Id == BaId)
+                .Include(p=> p.Household)
+                .SelectMany(p => p.Household.JoinedUsers)
+                .ToList();
+        }
+
+
     }
 
     public class CategoryHelper
@@ -96,7 +115,7 @@ namespace HouseholdBudgeterAPI.Models.Helper
                .FirstOrDefault();
         }
 
-        public Category GetByIdWithHhOwnerId(int id)
+        public Category GetByIdWithHh(int id)
         {
             return DbContext.Categories
                .Include(p => p.Household)
@@ -113,5 +132,84 @@ namespace HouseholdBudgeterAPI.Models.Helper
 
     }
 
+    public class BankAccountHelper
+    {
+        private readonly ApplicationDbContext DbContext;
+        public BankAccountHelper(ApplicationDbContext dbContext)
+        {
+            DbContext = dbContext;
+        }
 
-}
+        public BankAccount GetById(int id)
+        {
+            return DbContext.BankAccounts
+               .FirstOrDefault(p => p.Id == id);
+        }
+
+        public BankAccount GetByIdWithHh(int id)
+        {
+            return DbContext.BankAccounts
+               .Where(p => p.Id == id)
+               .Include(p => p.Household)
+               .FirstOrDefault();
+        }
+
+        public int GetByIdWithJoinedUsers(int id)
+        {
+            return DbContext.BankAccounts
+               .Where(p => p.Id == id)
+               .Include(p => p.Household.JoinedUsers)
+               .Select(p=> p.HouseholdId)
+               .FirstOrDefault();
+        }
+
+
+    }
+
+    public class TransactionHelper
+    {
+        private readonly ApplicationDbContext DbContext;
+        public TransactionHelper(ApplicationDbContext dbContext)
+        {
+            DbContext = dbContext;
+        }
+
+        public bool IsCategoryBelongToSameHhByBaId(int id, int CatId)
+        {
+            return DbContext.BankAccounts
+               .Where(p => p.Id == id)
+               .Any(p => p.Household.Categories.Any(b => b.Id == CatId));
+        }
+
+        public bool IsCategoryBelongToSameHhByTransId(int id, int CatId)
+        {
+            return DbContext.Transactions
+               .Where(p => p.Id == id)
+               .Any(p => p.CategoryId== CatId);
+        }
+
+
+        public Transaction GetById(int id)
+        {
+            return DbContext.Transactions
+                    .Where(p => p.Id == id)
+                    .FirstOrDefault();
+        }
+
+        public Transaction GetByIdWithHhViaCat(int id)
+        {
+            return DbContext.Transactions
+                    .Where(p => p.Id == id)
+                    .Include(p=> p.Category.Household)
+                    .FirstOrDefault();
+        }
+
+
+
+    }
+
+
+
+
+
+    }

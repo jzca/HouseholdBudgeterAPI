@@ -18,6 +18,7 @@ namespace HouseholdBudgeterAPI.Models
             OwnedHouseholds = new List<Household>();
             JoinedHouseholds = new List<Household>();
             InvitedHouseholds = new List<Household>();
+            CreatedTranscations = new List<Transaction>();
 
         }
         [InverseProperty(nameof(Household.Owner))]
@@ -26,6 +27,8 @@ namespace HouseholdBudgeterAPI.Models
         public virtual List<Household> JoinedHouseholds { get; set; }
         [InverseProperty(nameof(Household.InvitedUsers))]
         public virtual List<Household> InvitedHouseholds { get; set; }
+        //[InverseProperty(nameof(Transaction.Creator))]
+        public virtual List<Transaction> CreatedTranscations { get; set; }
 
 
 

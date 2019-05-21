@@ -222,8 +222,10 @@
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountBindingModels.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\BindingModel\BankAccountBindingModel.cs" />
     <Compile Include="Models\BindingModel\CategoryBindingModel.cs" />
     <Compile Include="Models\BindingModel\HouseholdBindingModel.cs" />
+    <Compile Include="Models\BindingModel\TranscationBindingModel.cs" />
     <Compile Include="Models\Domain\BankAccount.cs" />
     <Compile Include="Models\Domain\Category.cs" />
     <Compile Include="Models\Domain\Household.cs" />
@@ -231,9 +233,11 @@
     <Compile Include="Models\EmailService.cs" />
     <Compile Include="Models\Helper\AppHelper.cs" />
     <Compile Include="Models\IdentityModels.cs" />
+    <Compile Include="Models\ViewModel\BankAccountViewModel.cs" />
     <Compile Include="Models\ViewModel\CategoryViewModel.cs" />
     <Compile Include="Models\ViewModel\HouseholdViewModel.cs" />
     <Compile Include="Models\ViewModel\ShowUsersViewModel.cs" />
+    <Compile Include="Models\ViewModel\TranscationViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ApplicationOAuthProvider.cs" />
     <Compile Include="Results\ChallengeResult.cs" />

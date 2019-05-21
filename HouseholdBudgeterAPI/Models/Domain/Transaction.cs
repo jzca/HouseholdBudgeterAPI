@@ -9,6 +9,7 @@ namespace HouseholdBudgeterAPI.Models.Domain
     {
         public int Id { get; set; }
         public string Title { get; set; }
+        public decimal Amount { get; set; }
         public string Description { get; set; }
         public DateTime DateTransacted { get; set; }
         public DateTime DateCreated { get; set; }
@@ -17,6 +18,20 @@ namespace HouseholdBudgeterAPI.Models.Domain
         public int BankAccountId { get; set; }
         public virtual Category Category { get; set; }
         public int CategoryId { get; set; }
+        public bool IsVoid { get; set; }
+        public virtual ApplicationUser Creator { get; set; }
+        public string CreatorId { get; set; }
+
+        public bool IsCreator(string userId)
+        {
+            return CreatorId == userId;
+        }
+
+        public bool IsHhOwner(string userId)
+        {
+            return Category.Household.IsOwner(userId);
+        }
+
 
     }
 }

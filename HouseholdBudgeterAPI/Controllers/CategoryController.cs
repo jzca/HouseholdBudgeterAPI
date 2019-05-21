@@ -76,7 +76,7 @@ namespace HouseholdBudgeterAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            var category = CategoryHelper.GetByIdWithHhOwnerId(id);
+            var category = CategoryHelper.GetByIdWithHh(id);
 
             if (category == null)
             {
@@ -133,7 +133,7 @@ namespace HouseholdBudgeterAPI.Controllers
         [HttpDelete]
         public IHttpActionResult Delete(int id)
         {
-            var category = CategoryHelper.GetByIdWithHhOwnerId(id);
+            var category = CategoryHelper.GetByIdWithHh(id);
 
             if (category == null)
             {
