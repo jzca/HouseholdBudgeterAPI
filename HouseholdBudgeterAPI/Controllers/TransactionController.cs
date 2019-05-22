@@ -66,6 +66,8 @@ namespace HouseholdBudgeterAPI.Controllers
             DbContext.Transactions.Add(transcation);
             DbContext.SaveChanges();
 
+            CalculateBalance(transcation.BankAccountId);
+
             var viewModel = Mapper.Map<TranscationViewModel>(transcation);
 
             return Ok(viewModel);
@@ -104,6 +106,8 @@ namespace HouseholdBudgeterAPI.Controllers
 
             DbContext.SaveChanges();
 
+            CalculateBalance(transcation.BankAccountId);
+
             var viewModel = Mapper.Map<TranscationViewModel>(transcation);
             return Ok(viewModel);
 
@@ -124,8 +128,12 @@ namespace HouseholdBudgeterAPI.Controllers
                 return Unauthorized();
             }
 
+            var bankAccId = transcation.BankAccountId;
+
             DbContext.Transactions.Remove(transcation);
             DbContext.SaveChanges();
+
+            CalculateBalance(bankAccId);
 
             return Ok();
         }
@@ -149,9 +157,38 @@ namespace HouseholdBudgeterAPI.Controllers
 
             DbContext.SaveChanges();
 
+            CalculateBalance(transcation.BankAccountId);
+
             var viewModel = Mapper.Map<TranscationViewModel>(transcation);
 
             return Ok(viewModel);
+        }
+
+        [HttpGet]
+        public IHttpActionResult GetAllByBaId(int id)
+        {
+            var allTransactionsModel = DbContext.BankAccounts
+                .Where(p => p.Id == id)
+                .ProjectTo<TranscationViewModel>()
+                .ToList();
+
+            if (!allTransactionsModel.Any())
+            {
+                return NotFound();
+            }
+
+            bool isJoined = DbContext
+                .BankAccounts
+                .Where(p => p.Id == id)
+                .Any(a => a.Household.JoinedUsers
+                .Any(b => b.Id == CurrentUserID));
+
+            if (!isJoined)
+            {
+                return Unauthorized();
+            }
+
+            return Ok(allTransactionsModel);
         }
 
         private bool IsAuthorized(Transaction trans, string userId)
@@ -165,6 +202,18 @@ namespace HouseholdBudgeterAPI.Controllers
             else
             {
                 return false;
+            }
+        }
+
+        private void CalculateBalance(int BaId)
+        {
+            var bankAcc = BankAccountHelper.GetByIdWithTrans(BaId);
+            var allAmt = TransactionHelper.GetSumOfAllByTrans(bankAcc.Transactions);
+            var changed = bankAcc.Balance != allAmt;
+            if (changed)
+            {
+                bankAcc.Balance = allAmt;
+                DbContext.SaveChanges();
             }
         }
 

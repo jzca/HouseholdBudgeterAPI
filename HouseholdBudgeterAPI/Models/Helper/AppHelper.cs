@@ -88,14 +88,14 @@ namespace HouseholdBudgeterAPI.Models.Helper
                 .ToList();
         }
 
-        public List<ApplicationUser> GetJoinedUsersByBaIdWithHh(int BaId)
-        {
-            return DbContext.BankAccounts.
-                Where(p => p.Id == BaId)
-                .Include(p=> p.Household)
-                .SelectMany(p => p.Household.JoinedUsers)
-                .ToList();
-        }
+        //public List<ApplicationUser> GetJoinedUsersByBaIdWithHh(int BaId)
+        //{
+        //    return DbContext.BankAccounts.
+        //        Where(p => p.Id == BaId)
+        //        .Include(p=> p.Household)
+        //        .SelectMany(p => p.Household.JoinedUsers)
+        //        .ToList();
+        //}
 
 
     }
@@ -103,17 +103,18 @@ namespace HouseholdBudgeterAPI.Models.Helper
     public class CategoryHelper
     {
         private readonly ApplicationDbContext DbContext;
+
         public CategoryHelper(ApplicationDbContext dbContext)
         {
             DbContext = dbContext;
         }
 
-        public Category GetById(int id)
-        {
-            return DbContext.Categories
-               .Where(p => p.Id == id)
-               .FirstOrDefault();
-        }
+        //public Category GetById(int id)
+        //{
+        //    return DbContext.Categories
+        //       .Where(p => p.Id == id)
+        //       .FirstOrDefault();
+        //}
 
         public Category GetByIdWithHh(int id)
         {
@@ -123,12 +124,12 @@ namespace HouseholdBudgeterAPI.Models.Helper
                .FirstOrDefault();
         }
 
-        public List<Category> GetAllByHhId(int id)
-        {
-            return DbContext.Categories
-               .Where(p => p.HouseholdId == id)
-               .ToList();
-        }
+        //public List<Category> GetAllByHhId(int id)
+        //{
+        //    return DbContext.Categories
+        //       .Where(p => p.HouseholdId == id)
+        //       .ToList();
+        //}
 
     }
 
@@ -140,11 +141,11 @@ namespace HouseholdBudgeterAPI.Models.Helper
             DbContext = dbContext;
         }
 
-        public BankAccount GetById(int id)
-        {
-            return DbContext.BankAccounts
-               .FirstOrDefault(p => p.Id == id);
-        }
+        //public BankAccount GetById(int id)
+        //{
+        //    return DbContext.BankAccounts
+        //       .FirstOrDefault(p => p.Id == id);
+        //}
 
         public BankAccount GetByIdWithHh(int id)
         {
@@ -154,15 +155,31 @@ namespace HouseholdBudgeterAPI.Models.Helper
                .FirstOrDefault();
         }
 
-        public int GetByIdWithJoinedUsers(int id)
+        //public int GetHhIdByIdWithJoinedUsers(int id)
+        //{
+        //    return DbContext.BankAccounts
+        //       .Where(p => p.Id == id)
+        //       .Include(p => p.Household.JoinedUsers)
+        //       .Select(p=> p.HouseholdId)
+        //       .FirstOrDefault();
+        //}
+
+        public BankAccount GetByIdWithHhTrans(int id)
         {
             return DbContext.BankAccounts
                .Where(p => p.Id == id)
-               .Include(p => p.Household.JoinedUsers)
-               .Select(p=> p.HouseholdId)
+               .Include(p => p.Household)
+               .Include(p=> p.Transactions)
                .FirstOrDefault();
         }
 
+        public BankAccount GetByIdWithTrans(int id)
+        {
+            return DbContext.BankAccounts
+               .Where(p => p.Id == id)
+               .Include(p => p.Transactions)
+               .FirstOrDefault();
+        }
 
     }
 
@@ -189,12 +206,12 @@ namespace HouseholdBudgeterAPI.Models.Helper
         }
 
 
-        public Transaction GetById(int id)
-        {
-            return DbContext.Transactions
-                    .Where(p => p.Id == id)
-                    .FirstOrDefault();
-        }
+        //public Transaction GetById(int id)
+        //{
+        //    return DbContext.Transactions
+        //            .Where(p => p.Id == id)
+        //            .FirstOrDefault();
+        //}
 
         public Transaction GetByIdWithHhViaCat(int id)
         {
@@ -204,6 +221,26 @@ namespace HouseholdBudgeterAPI.Models.Helper
                     .FirstOrDefault();
         }
 
+        //public List<string> GetAllTranAmtByBaId(int? id)
+        //{
+        //    return DbContext.BankAccounts
+        //            .Where(p => p.Id == id)
+        //            .SelectMany(n => n.Transactions.Select(m=> m.Amount.ToString()))
+        //            .ToList();
+        //}
+
+        public decimal GetSumOfAllTransByBaId(int? id)
+        {
+            return DbContext.BankAccounts
+                    .Where(p => p.Id == id)
+                    .SelectMany(n => 
+                    n.Transactions.Select(m => m.Amount)).Sum();
+        }
+
+        public decimal GetSumOfAllByTrans(List<Transaction> trans)
+        {
+            return trans.Select(n => n.Amount).Sum();
+        }
 
 
     }

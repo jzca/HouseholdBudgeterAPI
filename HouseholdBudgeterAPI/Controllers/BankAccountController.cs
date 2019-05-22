@@ -22,6 +22,7 @@ namespace HouseholdBudgeterAPI.Controllers
         private readonly HouseholdHelper HouseholdHelper;
         private readonly UserHelper UserHelper;
         private readonly BankAccountHelper BankAccountHelper;
+        private readonly TransactionHelper TransactionHelper;
 
         public BankAccountController()
         {
@@ -29,6 +30,7 @@ namespace HouseholdBudgeterAPI.Controllers
             HouseholdHelper = new HouseholdHelper(DbContext);
             UserHelper = new UserHelper(DbContext);
             BankAccountHelper = new BankAccountHelper(DbContext);
+            TransactionHelper = new TransactionHelper(DbContext);
         }
 
         [HttpPost]
@@ -156,6 +158,35 @@ namespace HouseholdBudgeterAPI.Controllers
             DbContext.SaveChanges();
 
             return Ok();
+        }
+
+        [HttpPut]
+        public IHttpActionResult UpdateBalance(int id)
+        {
+
+            var bankAccount = BankAccountHelper.GetByIdWithHhTrans(id);
+
+            if (bankAccount == null)
+            {
+                return NotFound();
+            }
+
+            var currentUserId = User.Identity.GetUserId();
+            var IsOwner = bankAccount.Household.OwnerId == currentUserId;
+
+            if (!IsOwner)
+            {
+                return Unauthorized();
+            }
+
+            bankAccount.Balance = TransactionHelper
+                .GetSumOfAllByTrans(bankAccount.Transactions);
+
+            DbContext.SaveChanges();
+
+            var viewModel = Mapper.Map<BankAccountViewModel>(bankAccount);
+            return Ok(viewModel);
+
         }
 
 

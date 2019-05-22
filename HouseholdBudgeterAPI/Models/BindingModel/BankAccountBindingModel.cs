@@ -14,21 +14,4 @@ namespace HouseholdBudgeterAPI.Models.BindingModel
         public string Description { get; set; }
     }
 
-    //public class CreateBankAccountBindingModel
-    //{
-    //    [Required]
-    //    public decimal Balance { get; set; }
-    //    [Required]
-    //    public string Name { get; set; }
-    //    [Required]
-    //    public string Description { get; set; }
-    //}
-
-    //public class EditBankAccountBindingModel
-    //{
-    //    [Required]
-    //    public string Name { get; set; }
-    //    [Required]
-    //    public string Description { get; set; }
-    //}
 }
