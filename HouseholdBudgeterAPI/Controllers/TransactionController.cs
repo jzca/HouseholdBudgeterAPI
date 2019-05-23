@@ -52,9 +52,15 @@ namespace HouseholdBudgeterAPI.Controllers
             var validCatId = TransactionHelper
                 .IsCategoryBelongToSameHhByBaId(formData.BankAccountId, formData.CategoryId);
 
+            if (!validCatId)
+            {
+                ModelState.AddModelError("CategoryId", "You don't share the same Household with this Cat.");
+                return BadRequest(ModelState);
+            }
+
             var isJoined = joinedUsers.Any(p => p.Id == CurrentUserID);
 
-            if (!validCatId || !isJoined)
+            if (!isJoined)
             {
                 return Unauthorized();
             }
@@ -66,7 +72,7 @@ namespace HouseholdBudgeterAPI.Controllers
 
             DbContext.Transactions.Add(transcation);
 
-            SimpleCalculateBalance(true, transcation.BankAccountId, transcation, formData.Amount);
+            SimpleCalculateBalance(true,true, transcation.BankAccountId, transcation, formData.Amount);
 
             DbContext.SaveChanges();
 
@@ -112,7 +118,7 @@ namespace HouseholdBudgeterAPI.Controllers
             Mapper.Map(formData, transcation);
             transcation.DateUpdated = DateTime.Now;
 
-            SimpleCalculateBalance(true, transcation.BankAccountId, transcation, formData.Amount);
+            SimpleCalculateBalance(true,false, transcation.BankAccountId, transcation, formData.Amount);
 
             DbContext.SaveChanges();
 
@@ -140,7 +146,7 @@ namespace HouseholdBudgeterAPI.Controllers
 
             DbContext.Transactions.Remove(transcation);
 
-            SimpleCalculateBalance(false, transcation.BankAccountId, transcation, oldAmt);
+            SimpleCalculateBalance(false,false, transcation.BankAccountId, transcation, oldAmt);
 
             DbContext.SaveChanges();
 
@@ -166,7 +172,7 @@ namespace HouseholdBudgeterAPI.Controllers
 
             var oldAmt = transcation.Amount;
 
-            SimpleCalculateBalance(false, transcation.BankAccountId, transcation, oldAmt);
+            SimpleCalculateBalance(false,false, transcation.BankAccountId, transcation, oldAmt);
 
             DbContext.SaveChanges();
 
@@ -217,27 +223,14 @@ namespace HouseholdBudgeterAPI.Controllers
             }
         }
 
-        private void CalculateBalance(int BaId)
-        {
-            var bankAcc = BankAccountHelper.GetByIdWithTrans(BaId);
-            var allAmt = TransactionHelper.GetSumOfAllByTrans(bankAcc.Transactions);
-            var changed = bankAcc.Balance != allAmt;
-            if (changed)
-            {
-                bankAcc.Balance = allAmt;
-                DbContext.SaveChanges();
-            }
-        }
-
-
-        private void SimpleCalculateBalance(bool plus, int BaId, Transaction trans, decimal inputVal)
+        private void SimpleCalculateBalance(bool plus, bool onCreated, int BaId, Transaction trans, decimal inputVal)
         {
             var bankAcc = BankAccountHelper.GetByIdWithTrans(BaId);
 
             if (plus)
             {
                 var changed = trans.Amount != inputVal;
-                if (changed)
+                if (changed || onCreated)
                 {
                     bankAcc.Balance += inputVal;
                 }
@@ -248,26 +241,6 @@ namespace HouseholdBudgeterAPI.Controllers
             }
 
         }
-
-        //private void PlusBalance(int BaId, Transaction trans, decimal newVal)
-        //{
-        //    var bankAcc = BankAccountHelper.GetByIdWithTrans(BaId);
-        //    var changed = trans.Amount != newVal;
-        //    if (changed)
-        //    {
-        //        bankAcc.Balance += newVal;
-        //    }
-        //}
-
-        //private void MinusBalance(int BaId, Transaction trans, decimal newVal)
-        //{
-        //    var bankAcc = BankAccountHelper.GetByIdWithTrans(BaId);
-        //    var changed = trans.Amount != newVal;
-        //    if (changed)
-        //    {
-        //        bankAcc.Balance += newVal;
-        //    }
-        //}
 
 
     }
