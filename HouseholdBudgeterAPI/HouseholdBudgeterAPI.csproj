@@ -222,8 +222,11 @@
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountBindingModels.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\BindingModel\EditBankAccountBindingModel.cs" />
     <Compile Include="Models\BindingModel\BankAccountBindingModel.cs" />
     <Compile Include="Models\BindingModel\CategoryBindingModel.cs" />
+    <Compile Include="Models\BindingModel\EditCategoryBindingModel.cs" />
+    <Compile Include="Models\BindingModel\EditTranscationBindingModel.cs" />
     <Compile Include="Models\BindingModel\HouseholdBindingModel.cs" />
     <Compile Include="Models\BindingModel\TranscationBindingModel.cs" />
     <Compile Include="Models\Domain\BankAccount.cs" />

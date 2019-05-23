@@ -32,14 +32,14 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpPost]
-        public IHttpActionResult Create(int id, CategoryBindingModel model)
+        public IHttpActionResult Create(CategoryBindingModel model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var householdOwnerId = HouseholdHelper.GetHhOwnerIdByHhId(id);
+            var householdOwnerId = HouseholdHelper.GetHhOwnerIdByHhId(model.HouseholdId);
 
             if (householdOwnerId == null)
             {
@@ -55,7 +55,6 @@ namespace HouseholdBudgeterAPI.Controllers
             }
 
             var category = Mapper.Map<Category>(model);
-            category.HouseholdId = id;
             category.DateCreated = DateTime.Now;
 
             DbContext.Categories.Add(category);
@@ -63,13 +62,13 @@ namespace HouseholdBudgeterAPI.Controllers
 
             var viewModel = Mapper.Map<CategoryViewModel>(category);
             var url = Url.Link("DefaultApi",
-                new { Action = "GetAllByHhId", id });
+                new { Action = "GetAllByHhId", model.HouseholdId });
 
             return Created(url, viewModel);
         }
 
         [HttpPut]
-        public IHttpActionResult Edit(int id, CategoryBindingModel model)
+        public IHttpActionResult Edit(int id, EditCategoryBindingModel model)
         {
             if (!ModelState.IsValid)
             {

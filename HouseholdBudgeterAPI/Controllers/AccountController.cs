@@ -397,8 +397,7 @@ namespace HouseholdBudgeterAPI.Controllers
                 if (user == null)
                 {
                     // Don't reveal that the user does not exist or is not confirmed
-                    ModelState.AddModelError("Email", "The user does not exist");
-                    return BadRequest(ModelState);
+                    return Ok();
                 }
 
                 // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
@@ -444,17 +443,24 @@ namespace HouseholdBudgeterAPI.Controllers
             var user = await UserManager.FindByNameAsync(model.Email);
             if (user == null)
             {
-                ModelState.AddModelError("Email", "The user does not exist");
-                return BadRequest(ModelState);
+                return Ok();
             }
             var result = await UserManager.ResetPasswordAsync(user.Id, model.Code, model.Password);
             if (result.Succeeded)
             {
                 return Ok();
             }
-            else
+
+            AddErrors(result);
+            return BadRequest(ModelState);
+
+        }
+
+        private void AddErrors(IdentityResult result)
+        {
+            foreach (var error in result.Errors)
             {
-                return InternalServerError();
+                ModelState.AddModelError("", error);
             }
         }
 

@@ -35,21 +35,22 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpPost]
-        public IHttpActionResult Create(int id, TranscationBindingModel formData)
+        public IHttpActionResult Create(TranscationBindingModel formData)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var joinedUsers = UserHelper.GetJoinedUsersByBaId(id);
+            var joinedUsers = UserHelper.GetJoinedUsersByBaId(formData.BankAccountId);
 
             if (!joinedUsers.Any())
             {
                 return NotFound();
             }
 
-            var validCatId = TransactionHelper.IsCategoryBelongToSameHhByBaId(id, formData.CategoryId);
+            var validCatId = TransactionHelper
+                .IsCategoryBelongToSameHhByBaId(formData.BankAccountId, formData.CategoryId);
 
             var isJoined = joinedUsers.Any(p => p.Id == CurrentUserID);
 
@@ -58,15 +59,16 @@ namespace HouseholdBudgeterAPI.Controllers
                 return Unauthorized();
             }
 
+
             var transcation = Mapper.Map<Transaction>(formData);
-            transcation.BankAccountId = id;
             transcation.DateCreated = DateTime.Now;
             transcation.CreatorId = CurrentUserID;
 
             DbContext.Transactions.Add(transcation);
-            DbContext.SaveChanges();
 
-            CalculateBalance(transcation.BankAccountId);
+            SimpleCalculateBalance(true, transcation.BankAccountId, transcation, formData.Amount);
+
+            DbContext.SaveChanges();
 
             var viewModel = Mapper.Map<TranscationViewModel>(transcation);
 
@@ -74,7 +76,7 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpPut]
-        public IHttpActionResult Edit(int id, TranscationBindingModel formData)
+        public IHttpActionResult Edit(int id, EditTranscationBindingModel formData)
         {
             if (!ModelState.IsValid)
             {
@@ -96,6 +98,12 @@ namespace HouseholdBudgeterAPI.Controllers
                 return NotFound();
             }
 
+            if(transcation.IsVoid == true)
+            {
+                ModelState.AddModelError("IsVoid", "Cannot edit void transcation");
+                return BadRequest(ModelState);
+            }
+
             if (IsAuthorized(transcation, CurrentUserID))
             {
                 return Unauthorized();
@@ -104,9 +112,9 @@ namespace HouseholdBudgeterAPI.Controllers
             Mapper.Map(formData, transcation);
             transcation.DateUpdated = DateTime.Now;
 
-            DbContext.SaveChanges();
+            SimpleCalculateBalance(true, transcation.BankAccountId, transcation, formData.Amount);
 
-            CalculateBalance(transcation.BankAccountId);
+            DbContext.SaveChanges();
 
             var viewModel = Mapper.Map<TranscationViewModel>(transcation);
             return Ok(viewModel);
@@ -128,12 +136,13 @@ namespace HouseholdBudgeterAPI.Controllers
                 return Unauthorized();
             }
 
-            var bankAccId = transcation.BankAccountId;
+            var oldAmt = transcation.Amount;
 
             DbContext.Transactions.Remove(transcation);
-            DbContext.SaveChanges();
 
-            CalculateBalance(bankAccId);
+            SimpleCalculateBalance(false, transcation.BankAccountId, transcation, oldAmt);
+
+            DbContext.SaveChanges();
 
             return Ok();
         }
@@ -155,9 +164,12 @@ namespace HouseholdBudgeterAPI.Controllers
 
             transcation.IsVoid = true;
 
+            var oldAmt = transcation.Amount;
+
+            SimpleCalculateBalance(false, transcation.BankAccountId, transcation, oldAmt);
+
             DbContext.SaveChanges();
 
-            CalculateBalance(transcation.BankAccountId);
 
             var viewModel = Mapper.Map<TranscationViewModel>(transcation);
 
@@ -194,7 +206,7 @@ namespace HouseholdBudgeterAPI.Controllers
         private bool IsAuthorized(Transaction trans, string userId)
         {
             var isCreator = trans.IsCreator(userId);
-            var isHhOwner = trans.IsHhOwner(userId);
+            var isHhOwner = trans.BankAccount.Household.IsOwner(userId);
             if (!isCreator && !isHhOwner)
             {
                 return true;
@@ -216,6 +228,47 @@ namespace HouseholdBudgeterAPI.Controllers
                 DbContext.SaveChanges();
             }
         }
+
+
+        private void SimpleCalculateBalance(bool plus, int BaId, Transaction trans, decimal inputVal)
+        {
+            var bankAcc = BankAccountHelper.GetByIdWithTrans(BaId);
+
+            if (plus)
+            {
+                var changed = trans.Amount != inputVal;
+                if (changed)
+                {
+                    bankAcc.Balance += inputVal;
+                }
+            }
+            else
+            {
+                bankAcc.Balance -= inputVal;
+            }
+
+        }
+
+        //private void PlusBalance(int BaId, Transaction trans, decimal newVal)
+        //{
+        //    var bankAcc = BankAccountHelper.GetByIdWithTrans(BaId);
+        //    var changed = trans.Amount != newVal;
+        //    if (changed)
+        //    {
+        //        bankAcc.Balance += newVal;
+        //    }
+        //}
+
+        //private void MinusBalance(int BaId, Transaction trans, decimal newVal)
+        //{
+        //    var bankAcc = BankAccountHelper.GetByIdWithTrans(BaId);
+        //    var changed = trans.Amount != newVal;
+        //    if (changed)
+        //    {
+        //        bankAcc.Balance += newVal;
+        //    }
+        //}
+
 
     }
 }

@@ -6,10 +6,8 @@ using System.Web;
 
 namespace HouseholdBudgeterAPI.Models.BindingModel
 {
-    public class TranscationBindingModel
+    public class EditTranscationBindingModel
     {
-        [Required]
-        public int BankAccountId { get; set; }
         [Required]
         public string Title { get; set; }
         [Required]

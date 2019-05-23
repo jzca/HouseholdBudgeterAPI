@@ -34,14 +34,14 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpPost]
-        public IHttpActionResult Create(int id, BankAccountBindingModel formData)
+        public IHttpActionResult Create(BankAccountBindingModel formData)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var householdOwnerId = HouseholdHelper.GetHhOwnerIdByHhId(id);
+            var householdOwnerId = HouseholdHelper.GetHhOwnerIdByHhId(formData.HouseholdId);
 
             if (householdOwnerId == null)
             {
@@ -57,7 +57,6 @@ namespace HouseholdBudgeterAPI.Controllers
             }
 
             var bankAccount = Mapper.Map<BankAccount>(formData);
-            bankAccount.HouseholdId = id;
             bankAccount.Balance = 0;
             bankAccount.DateCreated = DateTime.Now;
 
@@ -67,13 +66,13 @@ namespace HouseholdBudgeterAPI.Controllers
             var viewModel = Mapper.Map<BankAccountViewModel>(bankAccount);
 
             var url = Url.Link("DefaultApi",
-                new { Action = "GetAllByHhId", id });
+                new { Action = "GetAllByHhId", bankAccount.HouseholdId });
 
             return Created(url, viewModel);
         }
 
         [HttpPut]
-        public IHttpActionResult Edit(int id, BankAccountBindingModel formData)
+        public IHttpActionResult Edit(int id, EditBankAccountBindingModel formData)
         {
             if (!ModelState.IsValid)
             {

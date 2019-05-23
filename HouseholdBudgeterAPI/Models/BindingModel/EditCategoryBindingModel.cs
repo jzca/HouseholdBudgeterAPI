@@ -6,14 +6,11 @@ using System.Web;
 
 namespace HouseholdBudgeterAPI.Models.BindingModel
 {
-    public class BankAccountBindingModel
+    public class EditCategoryBindingModel
     {
-        [Required]
-        public int HouseholdId { get; set; }
         [Required]
         public string Name { get; set; }
         [Required]
         public string Description { get; set; }
     }
-
 }

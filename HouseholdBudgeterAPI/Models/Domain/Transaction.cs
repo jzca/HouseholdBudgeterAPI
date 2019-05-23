@@ -27,11 +27,6 @@ namespace HouseholdBudgeterAPI.Models.Domain
             return CreatorId == userId;
         }
 
-        public bool IsHhOwner(string userId)
-        {
-            return Category.Household.IsOwner(userId);
-        }
-
 
     }
 }

@@ -234,12 +234,17 @@ namespace HouseholdBudgeterAPI.Models.Helper
             return DbContext.BankAccounts
                     .Where(p => p.Id == id)
                     .SelectMany(n => 
-                    n.Transactions.Select(m => m.Amount)).Sum();
+                    n.Transactions
+                    .Where(t=> t.IsVoid == false)
+                    .Select(m => m.Amount)).Sum();
         }
 
         public decimal GetSumOfAllByTrans(List<Transaction> trans)
         {
-            return trans.Select(n => n.Amount).Sum();
+            return trans
+                .Where(t => t.IsVoid == false)
+                .Select(n => n.Amount)
+                .Sum();
         }
 
 

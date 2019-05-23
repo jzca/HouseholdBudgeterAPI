@@ -134,7 +134,8 @@ namespace HouseholdBudgeterAPI.Controllers
 
             if (user == null)
             {
-                return NotFound();
+                ModelState.AddModelError("email", "The user doesn't not exist");
+                return BadRequest(ModelState);
             }
 
             var alreadyInvited = household.AlreadyInvitedByEmail(email);
@@ -218,8 +219,6 @@ namespace HouseholdBudgeterAPI.Controllers
                 ModelState.AddModelError("id", "You are not invited");
                 return BadRequest(ModelState);
             }
-
-            var model = Mapper.Map<ShowUsersViewModel>(user);
 
             var joinedUsersModel = Mapper.Map<List<ShowUsersViewModel>>(household.JoinedUsers);
             return Ok(joinedUsersModel);
