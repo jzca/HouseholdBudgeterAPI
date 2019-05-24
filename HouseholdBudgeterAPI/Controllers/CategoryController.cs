@@ -22,6 +22,8 @@ namespace HouseholdBudgeterAPI.Controllers
         private readonly HouseholdHelper HouseholdHelper;
         private readonly UserHelper UserHelper;
         private readonly CategoryHelper CategoryHelper;
+        private readonly TransactionHelper TransactionHelper;
+        private readonly BankAccountHelper BankAccountHelper;
 
         public CategoryController()
         {
@@ -29,6 +31,9 @@ namespace HouseholdBudgeterAPI.Controllers
             HouseholdHelper = new HouseholdHelper(DbContext);
             UserHelper = new UserHelper(DbContext);
             CategoryHelper = new CategoryHelper(DbContext);
+            TransactionHelper = new TransactionHelper(DbContext);
+            BankAccountHelper = new BankAccountHelper(DbContext);
+
         }
 
         [HttpPost]
@@ -149,11 +154,37 @@ namespace HouseholdBudgeterAPI.Controllers
                 return Unauthorized();
             }
 
+            var manyBankAccId = TransactionHelper.GetAllBaIdByCatId(id);
+
             DbContext.Categories.Remove(category);
             DbContext.SaveChanges();
 
+            UpdateBalanceForBankAccs(manyBankAccId);
+
             return Ok();
         }
+
+        private void UpdateBalanceForBankAccs(List<int> baIds)
+        {
+            foreach( var p in baIds)
+            {
+                var bankAcc = BankAccountHelper.GetById(p);
+                bankAcc.Balance=TransactionHelper.GetSumOfAllTransByBaId(p);
+                DbContext.SaveChanges();
+            }
+        }
+
+        //private void UpdateBalanceForBankAccs(List<int> baIds)
+        //{
+        //    baIds.ForEach(p => 
+        //    {
+        //        TransactionHelper.GetSumOfAllTransByBaId(p);
+        //        DbContext.SaveChanges();
+        //    });
+
+
+
+        //}
 
     }
 }

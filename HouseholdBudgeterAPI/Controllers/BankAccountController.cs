@@ -31,6 +31,7 @@ namespace HouseholdBudgeterAPI.Controllers
             UserHelper = new UserHelper(DbContext);
             BankAccountHelper = new BankAccountHelper(DbContext);
             TransactionHelper = new TransactionHelper(DbContext);
+            BankAccountHelper = new BankAccountHelper(DbContext);
         }
 
         [HttpPost]

@@ -72,7 +72,7 @@ namespace HouseholdBudgeterAPI.Controllers
 
             DbContext.Transactions.Add(transcation);
 
-            SimpleCalculateBalance(true,true, transcation.BankAccountId, transcation, formData.Amount);
+            DirectCalculateBalance(true, transcation.BankAccountId, formData.Amount);
 
             DbContext.SaveChanges();
 
@@ -104,7 +104,7 @@ namespace HouseholdBudgeterAPI.Controllers
                 return NotFound();
             }
 
-            if(transcation.IsVoid == true)
+            if (transcation.IsVoid == true)
             {
                 ModelState.AddModelError("IsVoid", "Cannot edit void transcation");
                 return BadRequest(ModelState);
@@ -115,12 +115,15 @@ namespace HouseholdBudgeterAPI.Controllers
                 return Unauthorized();
             }
 
+            // For Calculation of Balance For Editing
+            var oldVal = transcation.Amount;
+
             Mapper.Map(formData, transcation);
             transcation.DateUpdated = DateTime.Now;
-
-            SimpleCalculateBalance(true,false, transcation.BankAccountId, transcation, formData.Amount);
-
             DbContext.SaveChanges();
+
+            EditCalculateBalance(transcation.BankAccountId, transcation, oldVal);
+
 
             var viewModel = Mapper.Map<TranscationViewModel>(transcation);
             return Ok(viewModel);
@@ -146,7 +149,10 @@ namespace HouseholdBudgeterAPI.Controllers
 
             DbContext.Transactions.Remove(transcation);
 
-            SimpleCalculateBalance(false,false, transcation.BankAccountId, transcation, oldAmt);
+            if (!transcation.IsVoid)
+            {
+                DirectCalculateBalance(false, transcation.BankAccountId, oldAmt);
+            }
 
             DbContext.SaveChanges();
 
@@ -172,14 +178,11 @@ namespace HouseholdBudgeterAPI.Controllers
 
             var oldAmt = transcation.Amount;
 
-            SimpleCalculateBalance(false,false, transcation.BankAccountId, transcation, oldAmt);
+            DirectCalculateBalance(false, transcation.BankAccountId, oldAmt);
 
             DbContext.SaveChanges();
 
-
-            var viewModel = Mapper.Map<TranscationViewModel>(transcation);
-
-            return Ok(viewModel);
+            return Ok();
         }
 
         [HttpGet]
@@ -187,6 +190,7 @@ namespace HouseholdBudgeterAPI.Controllers
         {
             var allTransactionsModel = DbContext.BankAccounts
                 .Where(p => p.Id == id)
+                .SelectMany(p=> p.Transactions)
                 .ProjectTo<TranscationViewModel>()
                 .ToList();
 
@@ -223,21 +227,42 @@ namespace HouseholdBudgeterAPI.Controllers
             }
         }
 
-        private void SimpleCalculateBalance(bool plus, bool onCreated, int BaId, Transaction trans, decimal inputVal)
+        private void DirectCalculateBalance(bool plus, int BaId, decimal inputVal)
         {
-            var bankAcc = BankAccountHelper.GetByIdWithTrans(BaId);
+            var bankAcc = BankAccountHelper.GetById(BaId);
 
             if (plus)
             {
-                var changed = trans.Amount != inputVal;
-                if (changed || onCreated)
-                {
-                    bankAcc.Balance += inputVal;
-                }
+                bankAcc.Balance += inputVal;
             }
             else
             {
                 bankAcc.Balance -= inputVal;
+            }
+
+        }
+
+        private void EditCalculateBalance(int BaId, Transaction trans, decimal oldVal)
+        {
+            var bankAcc = BankAccountHelper.GetById(BaId);
+
+            var newVal = trans.Amount;
+
+            var diff = oldVal - newVal;
+
+            if (oldVal != newVal)
+            {
+                if (oldVal < newVal)
+                {
+                    bankAcc.Balance += (-diff);
+                }
+                else if (oldVal > newVal)
+                {
+                    bankAcc.Balance -= diff;
+                }
+
+                DbContext.SaveChanges();
+
             }
 
         }
