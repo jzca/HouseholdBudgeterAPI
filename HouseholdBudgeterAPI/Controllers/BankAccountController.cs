@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using HouseholdBudgeterAPI.Models;
 using HouseholdBudgeterAPI.Models.BindingModel;
 using HouseholdBudgeterAPI.Models.Domain;
+using HouseholdBudgeterAPI.Models.Filter;
 using HouseholdBudgeterAPI.Models.Helper;
 using HouseholdBudgeterAPI.Models.ViewModel;
 using Microsoft.AspNet.Identity;
@@ -35,6 +36,7 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpPost]
+        [FormDataNullAF]
         public IHttpActionResult Create(BankAccountBindingModel formData)
         {
             if (!ModelState.IsValid)
@@ -73,6 +75,7 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpPut]
+        [FormDataNullAF]
         public IHttpActionResult Edit(int id, EditBankAccountBindingModel formData)
         {
             if (!ModelState.IsValid)

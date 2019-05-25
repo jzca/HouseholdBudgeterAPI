@@ -13,6 +13,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using HouseholdBudgeterAPI.Models.Filter;
 
 namespace HouseholdBudgeterAPI.Controllers
 {
@@ -32,6 +33,7 @@ namespace HouseholdBudgeterAPI.Controllers
 
 
         [HttpPost]
+        [FormDataNullAF]
         public IHttpActionResult Create(HouseholdBindingModel model)
         {
             if (!ModelState.IsValid)
@@ -54,6 +56,7 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpPut]
+        [FormDataNullAF]
         public IHttpActionResult Edit(int id, HouseholdBindingModel model)
         {
             if (!ModelState.IsValid)

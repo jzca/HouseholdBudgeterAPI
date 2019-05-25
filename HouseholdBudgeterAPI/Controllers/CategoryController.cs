@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using HouseholdBudgeterAPI.Models;
 using HouseholdBudgeterAPI.Models.BindingModel;
 using HouseholdBudgeterAPI.Models.Domain;
+using HouseholdBudgeterAPI.Models.Filter;
 using HouseholdBudgeterAPI.Models.Helper;
 using HouseholdBudgeterAPI.Models.ViewModel;
 using Microsoft.AspNet.Identity;
@@ -37,6 +38,7 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpPost]
+        [FormDataNullAF]
         public IHttpActionResult Create(CategoryBindingModel model)
         {
             if (!ModelState.IsValid)
@@ -73,6 +75,7 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpPut]
+        [FormDataNullAF]
         public IHttpActionResult Edit(int id, EditCategoryBindingModel model)
         {
             if (!ModelState.IsValid)
@@ -174,17 +177,6 @@ namespace HouseholdBudgeterAPI.Controllers
             }
         }
 
-        //private void UpdateBalanceForBankAccs(List<int> baIds)
-        //{
-        //    baIds.ForEach(p => 
-        //    {
-        //        TransactionHelper.GetSumOfAllTransByBaId(p);
-        //        DbContext.SaveChanges();
-        //    });
-
-
-
-        //}
 
     }
 }

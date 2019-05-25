@@ -234,6 +234,7 @@
     <Compile Include="Models\Domain\Household.cs" />
     <Compile Include="Models\Domain\Transaction.cs" />
     <Compile Include="Models\EmailService.cs" />
+    <Compile Include="Models\Filter\FormDataNullAF.cs" />
     <Compile Include="Models\Helper\AppHelper.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ViewModel\BankAccountViewModel.cs" />

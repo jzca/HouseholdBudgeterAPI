@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using HouseholdBudgeterAPI.Models;
 using HouseholdBudgeterAPI.Models.BindingModel;
 using HouseholdBudgeterAPI.Models.Domain;
+using HouseholdBudgeterAPI.Models.Filter;
 using HouseholdBudgeterAPI.Models.Helper;
 using HouseholdBudgeterAPI.Models.ViewModel;
 using Microsoft.AspNet.Identity;
@@ -35,6 +36,7 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpPost]
+        [FormDataNullAF]
         public IHttpActionResult Create(TranscationBindingModel formData)
         {
             if (!ModelState.IsValid)
@@ -82,6 +84,7 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpPut]
+        [FormDataNullAF]
         public IHttpActionResult Edit(int id, EditTranscationBindingModel formData)
         {
             if (!ModelState.IsValid)
@@ -94,7 +97,9 @@ namespace HouseholdBudgeterAPI.Controllers
 
             if (!validCatId)
             {
-                return Unauthorized();
+                ModelState
+                    .AddModelError("CategoryId", "You don't share the same Household with this Cat.");
+                return BadRequest(ModelState);
             }
 
             var transcation = TransactionHelper.GetByIdWithHhViaCat(id);
@@ -123,7 +128,6 @@ namespace HouseholdBudgeterAPI.Controllers
             DbContext.SaveChanges();
 
             EditCalculateBalance(transcation.BankAccountId, transcation, oldVal);
-
 
             var viewModel = Mapper.Map<TranscationViewModel>(transcation);
             return Ok(viewModel);
