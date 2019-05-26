@@ -21,7 +21,6 @@ namespace HouseholdBudgeterAPI.Controllers
     {
         private readonly ApplicationDbContext DbContext;
         private readonly HouseholdHelper HouseholdHelper;
-        private readonly UserHelper UserHelper;
         private readonly CategoryHelper CategoryHelper;
         private readonly TransactionHelper TransactionHelper;
         private readonly BankAccountHelper BankAccountHelper;
@@ -30,7 +29,6 @@ namespace HouseholdBudgeterAPI.Controllers
         {
             DbContext = new ApplicationDbContext();
             HouseholdHelper = new HouseholdHelper(DbContext);
-            UserHelper = new UserHelper(DbContext);
             CategoryHelper = new CategoryHelper(DbContext);
             TransactionHelper = new TransactionHelper(DbContext);
             BankAccountHelper = new BankAccountHelper(DbContext);
