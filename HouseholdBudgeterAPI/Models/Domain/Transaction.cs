@@ -27,6 +27,12 @@ namespace HouseholdBudgeterAPI.Models.Domain
             return CreatorId == userId;
         }
 
+        public Transaction()
+        {
+            DateCreated = DateTime.Now;
+            IsVoid = false;
+        }
+
 
     }
 }

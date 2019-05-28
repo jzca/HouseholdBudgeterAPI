@@ -181,9 +181,22 @@ namespace HouseholdBudgeterAPI.Models.Helper
 
         public bool IsCategoryBelongToSameHhByTransId(int id, int CatId)
         {
+            //var hhIdViaT = DbContext.Transactions
+            //       .Where(p => p.Id == id)
+            //       .Select(p => p.BankAccount.HouseholdId)
+            //       .FirstOrDefault();
+            //var hhIdViaC= DbContext.Categories
+            //    .Where(p=> p.Id== CatId)
+            //    .Select(p=> p.HouseholdId)
+            //    .FirstOrDefault();
+
+            //return hhIdViaT == hhIdViaC;
+
             return DbContext.Transactions
-               .Where(p => p.Id == id)
-               .Any(p => p.CategoryId== CatId);
+                    .Where(p => p.Id == id)
+                    .Any(p => p.BankAccount.Household.Categories.Any(b => b.Id == CatId));
+
+
         }
 
 

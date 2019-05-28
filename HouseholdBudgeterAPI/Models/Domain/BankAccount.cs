@@ -9,6 +9,8 @@ namespace HouseholdBudgeterAPI.Models.Domain
     {
         public BankAccount()
         {
+            Balance = 0;
+            DateCreated = DateTime.Now;
             Transactions = new List<Transaction>();
         }
 

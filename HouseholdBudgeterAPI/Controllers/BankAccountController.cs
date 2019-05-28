@@ -58,8 +58,6 @@ namespace HouseholdBudgeterAPI.Controllers
             }
 
             var bankAccount = Mapper.Map<BankAccount>(formData);
-            bankAccount.Balance = 0;
-            bankAccount.DateCreated = DateTime.Now;
 
             DbContext.BankAccounts.Add(bankAccount);
             DbContext.SaveChanges();
@@ -67,7 +65,7 @@ namespace HouseholdBudgeterAPI.Controllers
             var viewModel = Mapper.Map<BankAccountViewModel>(bankAccount);
 
             var url = Url.Link("DefaultApi",
-                new { Action = "GetAllByHhId", bankAccount.HouseholdId });
+                new { Action = "GetAllByHhId"});
 
             return Created(url, viewModel);
         }

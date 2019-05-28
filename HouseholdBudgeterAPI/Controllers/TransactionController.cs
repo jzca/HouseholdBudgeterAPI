@@ -67,7 +67,6 @@ namespace HouseholdBudgeterAPI.Controllers
 
 
             var transcation = Mapper.Map<Transaction>(formData);
-            transcation.DateCreated = DateTime.Now;
             transcation.CreatorId = CurrentUserID;
 
             DbContext.Transactions.Add(transcation);
@@ -176,6 +175,12 @@ namespace HouseholdBudgeterAPI.Controllers
                 return Unauthorized();
             }
 
+            if (transcation.IsVoid)
+            {
+                ModelState.AddModelError("IsVoid", "Cannot void a void transcation");
+                return BadRequest(ModelState);
+            }
+
             transcation.IsVoid = true;
 
             var oldAmt = transcation.Amount;
@@ -218,7 +223,7 @@ namespace HouseholdBudgeterAPI.Controllers
         private bool IsAuthorized(Transaction trans, string userId)
         {
             var isCreator = trans.IsCreator(userId);
-            var isHhOwner = trans.BankAccount.Household.IsOwner(userId);
+            var isHhOwner = trans.Category.Household.IsOwner(userId);
             if (!isCreator && !isHhOwner)
             {
                 return true;
