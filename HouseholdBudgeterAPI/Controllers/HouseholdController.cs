@@ -91,6 +91,68 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpGet]
+        public IHttpActionResult GetByUserId(int id)
+        {
+            var appUserId = User.Identity.GetUserId();
+
+            var myHousehold = DbContext.Households
+                .Where(p => p.Id == id && p.OwnerId == appUserId)
+                .ProjectTo<HouseholdViewModel>()
+                .FirstOrDefault();
+
+            if (myHousehold == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(myHousehold);
+        }
+
+        [HttpGet]
+        public IHttpActionResult GetByUserId()
+        {
+            var appUserId = User.Identity.GetUserId();
+
+            var myHouseholds = DbContext.Households
+                .Where(p => p.JoinedUsers.Any(b => b.Id == appUserId)
+                    || p.OwnerId == appUserId)
+                .ProjectTo<MyHouseholdViewModel>()
+                .ToList();
+
+            if (!myHouseholds.Any())
+            {
+                return NotFound();
+            }
+
+            myHouseholds.ForEach(p =>
+            {
+                p.IsOwner = p.OwnerId == appUserId;
+            });
+
+
+            return Ok(myHouseholds);
+        }
+
+        [HttpGet]
+        public IHttpActionResult GetByInvitedUser()
+        {
+            var appUserId = User.Identity.GetUserId();
+
+            var invitedHouseholds = DbContext.Households
+                .Where(p => p.InvitedUsers.Any(b => b.Id == appUserId)
+                && p.OwnerId != appUserId)
+                .ProjectTo<HouseholdViewModel>()
+                .ToList();
+
+            if (!invitedHouseholds.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(invitedHouseholds);
+        }
+
+        [HttpGet]
         public IHttpActionResult GetUsersByHhId(int id)
         {
             var joinedUsersModel = DbContext.Households
@@ -115,8 +177,14 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpPost]
-        public IHttpActionResult InviteUserByHhIdEmail(int id, string email)
+        public IHttpActionResult InviteUserByHhIdEmail(int id, InviteUserBindingModel formData)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var email = formData.Email;
 
             var household = HouseholdHelper.GetByIdWithInvitedJoinedUsers(id);
 
@@ -277,7 +345,7 @@ namespace HouseholdBudgeterAPI.Controllers
             {
                 return Unauthorized();
             }
-            
+
             var AllBelongedCat = household.Categories;
 
             if (AllBelongedCat.Any())
