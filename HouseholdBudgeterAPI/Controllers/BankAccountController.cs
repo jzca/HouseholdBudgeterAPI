@@ -133,6 +133,64 @@ namespace HouseholdBudgeterAPI.Controllers
             return Ok(allBankAccountModel);
         }
 
+        [HttpGet]
+        public IHttpActionResult GetCreatedByHhId(int id)
+        {
+            var currentUserId = User.Identity.GetUserId();
+
+            var myBankAccounts = DbContext.BankAccounts
+                .Where(p => p.HouseholdId == id &&
+                p.Household.OwnerId == currentUserId)
+                .ProjectTo<BankAccountViewModel>()
+                .ToList();
+
+            if (!myBankAccounts.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(myBankAccounts);
+        }
+
+        [HttpGet]
+        public IHttpActionResult GetByBaId(int id)
+        {
+            var currentUserId = User.Identity.GetUserId();
+
+            var oneBankAccount = DbContext.BankAccounts
+                .Where(p => p.Id == id &&
+                p.Household.OwnerId == currentUserId)
+                .ProjectTo<CategoryViewModel>()
+                .FirstOrDefault();
+
+            if (oneBankAccount == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(oneBankAccount);
+        }
+
+        [HttpGet]
+        public IHttpActionResult GetAllByUserId()
+        {
+            var currentUserId = User.Identity.GetUserId();
+
+            var allBankAccounts = DbContext.BankAccounts
+                .Where(p => p.Household.JoinedUsers
+                .Any(b=> b.Id == currentUserId) 
+                || p.Household.OwnerId == currentUserId)
+                .ProjectTo<BankAccountViewModel>()
+                .ToList();
+
+            if (!allBankAccounts.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(allBankAccounts);
+        }
+
         [HttpDelete]
         public IHttpActionResult Delete(int id)
         {

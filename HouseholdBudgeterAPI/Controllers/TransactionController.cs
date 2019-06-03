@@ -198,7 +198,7 @@ namespace HouseholdBudgeterAPI.Controllers
             var allTransactionsModel = DbContext.BankAccounts
                 .Where(p => p.Id == id)
                 .SelectMany(p=> p.Transactions)
-                .ProjectTo<TranscationViewModel>()
+                .ProjectTo<TranscationDetailViewModel>()
                 .ToList();
 
             if (!allTransactionsModel.Any())
@@ -216,6 +216,13 @@ namespace HouseholdBudgeterAPI.Controllers
             {
                 return Unauthorized();
             }
+
+            var appUserId = User.Identity.GetUserId();
+
+            allTransactionsModel.ForEach(p =>
+            {
+                p.IsCreator = p.CreatorId == appUserId;
+            });
 
             return Ok(allTransactionsModel);
         }

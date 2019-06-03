@@ -134,6 +134,25 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpGet]
+        public IHttpActionResult GetOwnedByUserId()
+        {
+            var appUserId = User.Identity.GetUserId();
+
+            var ownedHouseholds = DbContext.Households
+                .Where(p=> p.OwnerId == appUserId)
+                .ProjectTo<HouseholdViewModel>()
+                .ToList();
+
+            if (!ownedHouseholds.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(ownedHouseholds);
+        }
+
+
+        [HttpGet]
         public IHttpActionResult GetByInvitedUser()
         {
             var appUserId = User.Identity.GetUserId();

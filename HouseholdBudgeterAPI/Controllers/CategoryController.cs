@@ -125,7 +125,7 @@ namespace HouseholdBudgeterAPI.Controllers
                 .Households
                 .Where(p => p.Id == id)
                 .Any(a => a.JoinedUsers
-                .Any(b=> b.Id == currentUserId));
+                .Any(b => b.Id == currentUserId));
 
             if (!isJoined)
             {
@@ -133,6 +133,44 @@ namespace HouseholdBudgeterAPI.Controllers
             }
 
             return Ok(allCategoriesModel);
+        }
+
+        [HttpGet]
+        public IHttpActionResult GetCreatedByHhId(int id)
+        {
+            var currentUserId = User.Identity.GetUserId();
+
+            var myCategoriesModel = DbContext.Categories
+                .Where(p => p.HouseholdId == id &&
+                p.Household.OwnerId == currentUserId)
+                .ProjectTo<CategoryViewModel>()
+                .ToList();
+
+            if (!myCategoriesModel.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(myCategoriesModel);
+        }
+
+        [HttpGet]
+        public IHttpActionResult GetByCatId(int id)
+        {
+            var currentUserId = User.Identity.GetUserId();
+
+            var myCategory = DbContext.Categories
+                .Where(p => p.Id == id &&
+                p.Household.OwnerId == currentUserId)
+                .ProjectTo<CategoryViewModel>()
+                .FirstOrDefault();
+
+            if (myCategory == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(myCategory);
         }
 
         [HttpDelete]
@@ -167,10 +205,10 @@ namespace HouseholdBudgeterAPI.Controllers
 
         private void UpdateBalanceForBankAccs(List<int> baIds)
         {
-            foreach( var p in baIds)
+            foreach (var p in baIds)
             {
                 var bankAcc = BankAccountHelper.GetById(p);
-                bankAcc.Balance=TransactionHelper.GetSumOfAllTransByBaId(p);
+                bankAcc.Balance = TransactionHelper.GetSumOfAllTransByBaId(p);
                 DbContext.SaveChanges();
             }
         }
