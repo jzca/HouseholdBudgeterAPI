@@ -405,13 +405,15 @@ namespace HouseholdBudgeterAPI.Controllers
 
                 var eService = new EmailService();
                 string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
+                var encodedCode = HttpUtility.UrlEncode(code);
                 var userEmail = UserManager.GetEmail(user.Id);
-                var callbackUrl = Url.Link("ResetPassword", null);
+                //var callbackUrlOld = Url.Link("ResetPassword", null);
+                var callbackUrl = $"http://localhost:2066/Account/ResetPassword?code={encodedCode}";
                 if (userEmail != null)
                 {
                     eService.Send(userEmail,
                         "Reset Password",
-                        $"Code for reseting your password: [<div>{code}</div>], via: <a href=\"" + callbackUrl + "\">here</a>");;
+                        $"Please link to reset your password: <a href=\"" + callbackUrl + "\">here</a>");;
                 }
                 else
                 {

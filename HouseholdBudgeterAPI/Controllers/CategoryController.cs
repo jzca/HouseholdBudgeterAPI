@@ -155,6 +155,24 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpGet]
+        public IHttpActionResult GetAllByHhBaId(int id)
+        {
+
+            var categoriesSameHh = DbContext.Categories
+                .Where(p => p.Household.BankAccounts
+                .Any(b=> b.Id == id))
+                .ProjectTo<CategoryViewModel>()
+                .ToList();
+
+            if (!categoriesSameHh.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(categoriesSameHh);
+        }
+
+        [HttpGet]
         public IHttpActionResult GetByCatId(int id)
         {
             var currentUserId = User.Identity.GetUserId();

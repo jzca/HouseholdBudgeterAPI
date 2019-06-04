@@ -2,6 +2,7 @@
 using HouseholdBudgeterAPI.Models.BindingModel;
 using HouseholdBudgeterAPI.Models.Domain;
 using HouseholdBudgeterAPI.Models.ViewModel;
+using Microsoft.AspNet.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +27,10 @@ namespace HouseholdBudgeterAPI.App_Start
                 cfg.CreateMap<Transaction, TranscationBindingModel>().ReverseMap();
                 cfg.CreateMap<Transaction, EditTranscationBindingModel>().ReverseMap();
                 cfg.CreateMap<Transaction, TranscationViewModel>().ReverseMap();
+                
+                //cfg.CreateMap<Transaction, TranscationDetailViewModel>()
+                //.ForMember(p => p.IsHhOwner, b => b.MapFrom(c => c.Category.Household.OwnerId == HttpContext.Current.User.Identity.GetUserId()))
+                //.ReverseMap();
                 
             });
         }

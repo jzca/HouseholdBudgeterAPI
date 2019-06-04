@@ -91,7 +91,7 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpGet]
-        public IHttpActionResult GetByUserId(int id)
+        public IHttpActionResult GetOwnedById(int id)
         {
             var appUserId = User.Identity.GetUserId();
 

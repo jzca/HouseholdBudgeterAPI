@@ -195,11 +195,31 @@ namespace HouseholdBudgeterAPI.Controllers
         [HttpGet]
         public IHttpActionResult GetAllByBaId(int id)
         {
-            var allTransactionsModel = DbContext.BankAccounts
+            var allTransactionsModelOld = DbContext.BankAccounts
                 .Where(p => p.Id == id)
-                .SelectMany(p=> p.Transactions)
+                .SelectMany(p => p.Transactions)
                 .ProjectTo<TranscationDetailViewModel>()
                 .ToList();
+
+            var allTransactionsModel = DbContext.BankAccounts
+                    .Where(p => p.Id == id)
+                    .SelectMany(p => p.Transactions)
+                    .Select(b => new TranscationDetailViewModel
+                    {
+                        Id = b.Id,
+                        Title = b.Title,
+                        Description = b.Description,
+                        Amount = b.Amount,
+                        DateTransacted = b.DateTransacted,
+                        DateCreated = b.DateCreated,
+                        DateUpdated = b.DateUpdated,
+                        BankAccountId = b.BankAccountId,
+                        CategoryId = b.CategoryId,
+                        CreatorId = b.CreatorId,
+                        IsCreator = b.CreatorId == CurrentUserID,
+                        IsHhOwner = b.BankAccount.Household.OwnerId == CurrentUserID
+                    })
+                    .ToList();
 
             if (!allTransactionsModel.Any())
             {
@@ -217,12 +237,10 @@ namespace HouseholdBudgeterAPI.Controllers
                 return Unauthorized();
             }
 
-            var appUserId = User.Identity.GetUserId();
-
-            allTransactionsModel.ForEach(p =>
-            {
-                p.IsCreator = p.CreatorId == appUserId;
-            });
+            //allTransactionsModel.ForEach(p =>
+            //{
+            //    p.IsCreator = p.CreatorId == appUserId;
+            //});
 
             return Ok(allTransactionsModel);
         }
