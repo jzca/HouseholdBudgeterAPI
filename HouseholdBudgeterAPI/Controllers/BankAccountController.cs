@@ -134,6 +134,74 @@ namespace HouseholdBudgeterAPI.Controllers
         }
 
         [HttpGet]
+        public IHttpActionResult GetTotalBalanceByHhId(int id)
+        {
+            var allBankAccountModel = DbContext.Households
+                .Where(p => p.Id == id)
+                .SelectMany(p=> p.BankAccounts)
+                .ProjectTo<BankAccountHouseholdViewModel>()
+                .ToList();
+
+            if (!allBankAccountModel.Any())
+            {
+                return NotFound();
+            }
+
+            var currentUserId = User.Identity.GetUserId();
+            bool isJoined = DbContext
+                .Households
+                .Where(p => p.Id == id)
+                .Any(a => a.JoinedUsers
+                .Any(b => b.Id == currentUserId));
+
+            if (!isJoined)
+            {
+                return Unauthorized();
+            }
+
+            //foreach(var ba in allBankAccountModel)
+            //{
+            //    DbContext.Categories.Where(b=> b.HouseholdId == ba.HouseholdId)
+            //        .Where(e=> e. Household.BankAccounts.Where(d=> d.Id == ba.Id))
+            //        .GroupBy(c=> c.CategoryId)
+            //        .SelectMany( n=> new TranscationHouseholdViewModel{
+            //            Amount= n.Sum(t=> t.Amount),
+            //            CategoryId= n.ca
+            //    })
+            //}
+
+
+            return Ok(allBankAccountModel);
+        }
+
+        //[HttpGet]
+        //public IHttpActionResult GetTranSumByBaIdByCat(int id)
+        //{
+        //    var currentUserId = User.Identity.GetUserId();
+        //    var myTranscation = DbContext.BankAccounts
+        //        .Where(p => p.Id == id &&
+        //                (p.Household.OwnerId == currentUserId
+        //                || p.Household.JoinedUsers.Any(c => c.Id == currentUserId)
+        //                ))
+        //                .SelectMany(p => p.Transactions)
+        //                .GroupBy(p => p.CategoryId)
+        //        .Select(c => new TranscationHouseholdViewModel
+        //        {
+        //            CategoryId = c.
+        //            CategoryName = c.Category.Name,
+        //            Amount = c.Amount
+        //        })
+        //        .ToList();
+
+        //    if (myTranscation == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return Ok(myTranscation);
+        //}
+
+        [HttpGet]
         public IHttpActionResult GetCreatedByHhId(int id)
         {
             var currentUserId = User.Identity.GetUserId();

@@ -27,11 +27,14 @@ namespace HouseholdBudgeterAPI.App_Start
                 cfg.CreateMap<Transaction, TranscationBindingModel>().ReverseMap();
                 cfg.CreateMap<Transaction, EditTranscationBindingModel>().ReverseMap();
                 cfg.CreateMap<Transaction, TranscationViewModel>().ReverseMap();
-                
-                //cfg.CreateMap<Transaction, TranscationDetailViewModel>()
-                //.ForMember(p => p.IsHhOwner, b => b.MapFrom(c => c.Category.Household.OwnerId == HttpContext.Current.User.Identity.GetUserId()))
-                //.ReverseMap();
-                
+
+                cfg.CreateMap<BankAccount, BankAccountHouseholdViewModel>()
+                .ForMember(p => p.TotalBalance, b => b.MapFrom(c => c.Household.BankAccounts.Sum(p=> p.Balance)))
+                .ReverseMap();
+                //cfg.CreateMap<Transaction, TranscationHouseholdViewModel>()
+                //    .ForMember(p => p.TotalAmount, b => b.MapFrom(c => c.b))
+                //    .ReverseMap();
+
             });
         }
     }

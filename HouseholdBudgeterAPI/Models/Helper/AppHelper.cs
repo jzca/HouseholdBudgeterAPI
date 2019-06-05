@@ -199,14 +199,6 @@ namespace HouseholdBudgeterAPI.Models.Helper
 
         }
 
-
-        //public Transaction GetById(int id)
-        //{
-        //    return DbContext.Transactions
-        //            .Where(p => p.Id == id)
-        //            .FirstOrDefault();
-        //}
-
         public Transaction GetByIdWithHhViaCat(int id)
         {
             return DbContext.Transactions

@@ -192,15 +192,30 @@ namespace HouseholdBudgeterAPI.Controllers
             return Ok();
         }
 
+
+        [HttpGet]
+        public IHttpActionResult GetById(int id)
+        {
+
+            var myTranscation = DbContext.Transactions
+                .Where(p => p.Id == id &&
+                        (p.BankAccount.Household.OwnerId==CurrentUserID
+                        || p.CreatorId==CurrentUserID)
+                      )
+                .ProjectTo<TranscationViewModel>()
+                .FirstOrDefault();
+
+            if (myTranscation == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(myTranscation);
+        }
+
         [HttpGet]
         public IHttpActionResult GetAllByBaId(int id)
         {
-            var allTransactionsModelOld = DbContext.BankAccounts
-                .Where(p => p.Id == id)
-                .SelectMany(p => p.Transactions)
-                .ProjectTo<TranscationDetailViewModel>()
-                .ToList();
-
             var allTransactionsModel = DbContext.BankAccounts
                     .Where(p => p.Id == id)
                     .SelectMany(p => p.Transactions)
@@ -216,8 +231,9 @@ namespace HouseholdBudgeterAPI.Controllers
                         BankAccountId = b.BankAccountId,
                         CategoryId = b.CategoryId,
                         CreatorId = b.CreatorId,
+                        IsVoid=b.IsVoid,
                         IsCreator = b.CreatorId == CurrentUserID,
-                        IsHhOwner = b.BankAccount.Household.OwnerId == CurrentUserID
+                        IsHhOwner = b.BankAccount.Household.OwnerId == CurrentUserID                        
                     })
                     .ToList();
 
@@ -236,11 +252,6 @@ namespace HouseholdBudgeterAPI.Controllers
             {
                 return Unauthorized();
             }
-
-            //allTransactionsModel.ForEach(p =>
-            //{
-            //    p.IsCreator = p.CreatorId == appUserId;
-            //});
 
             return Ok(allTransactionsModel);
         }
