@@ -42,6 +42,12 @@ namespace HouseholdBudgeterAPI.Controllers
                 return BadRequest(ModelState);
             }
 
+            if(formData.DateTransacted.Year<1900 || formData.DateTransacted.Year > 2100)
+            {
+                ModelState.AddModelError("Date", "Date is not vaild.");
+                return BadRequest(ModelState);
+            }
+
             var joinedUsers = UserHelper.GetJoinedUsersByBaId(formData.BankAccountId);
 
             if (!joinedUsers.Any())
@@ -86,6 +92,12 @@ namespace HouseholdBudgeterAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
+                return BadRequest(ModelState);
+            }
+
+            if (formData.DateTransacted.Year < 1900 || formData.DateTransacted.Year > 2100)
+            {
+                ModelState.AddModelError("Date", "Date is not vaild.");
                 return BadRequest(ModelState);
             }
 

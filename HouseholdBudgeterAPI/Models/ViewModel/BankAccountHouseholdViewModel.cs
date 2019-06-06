@@ -7,10 +7,7 @@ namespace HouseholdBudgeterAPI.Models.ViewModel
 {
     public class BankAccountHouseholdViewModel
     {
-        public int Id { get; set; }
-        public int HouseholdId { get; set; }
+        public string Name { get; set; }
         public decimal TotalBalance { get; set; }
-        public List<TranscationHouseholdViewModel> transcationHouseholdViews { get; set; }
-
     }
 }
