@@ -142,13 +142,6 @@ namespace HouseholdBudgeterAPI.Controllers
                 .ProjectTo<BankAccountHouseholdViewModel>()
                 .FirstOrDefault();
 
-
-                            //.Select(n => new BankAccountHouseholdViewModel
-                            // {
-                            //     Name = n.Household.Name,
-                            //     TotalBalance = n.Transactions.Sum(d => (decimal)d.Amount)
-                            // })
-
             if (allBankAccountModel== null)
             {
                 return NotFound();
@@ -169,40 +162,6 @@ namespace HouseholdBudgeterAPI.Controllers
             return Ok(allBankAccountModel);
         }
 
-        [HttpGet]
-        public IHttpActionResult GetTotalBalanceByHhId2(int id)
-        {
-            var transactionsByCategory = DbContext.Households
-                .Where(p => p.Id == id)
-                .SelectMany(p => p.BankAccounts)
-                .SelectMany(p=> p.Transactions)
-                .GroupBy(p=> p.Category.Name)
-                .Select(n=> new BankAccTransDetailViewModel
-                {
-                    CategoryName = n.Key,
-                    Amount = n.Sum(d => (decimal)d.Amount)
-                })
-                .ToList();
-
-            if (!transactionsByCategory.Any())
-            {
-                return NotFound();
-            }
-
-            var currentUserId = User.Identity.GetUserId();
-            bool isJoined = DbContext
-                .Households
-                .Where(p => p.Id == id)
-                .Any(a => a.JoinedUsers
-                .Any(b => b.Id == currentUserId));
-
-            if (!isJoined)
-            {
-                return Unauthorized();
-            }
-
-            return Ok(transactionsByCategory);
-        }
 
         [HttpGet]
         public IHttpActionResult BigEaBankAccBalanceByHhId(int id)
@@ -250,65 +209,65 @@ namespace HouseholdBudgeterAPI.Controllers
             return Ok(allBankAccs);
         }
 
-        [HttpGet]
-        public IHttpActionResult EaBankAccBalanceByHhId(int id)
-        {
-            var transactionsByCategory = DbContext.Households
-                .Where(p => p.Id == id)
-                .SelectMany(p => p.BankAccounts)
-                .Select(n => new EaBankAccDetailViewModel
-                {
-                    BankAccId=n.Id,
-                    BankAccName = n.Name,
-                    Amount = n.Balance
-                })
-                .ToList();
+        //[HttpGet]
+        //public IHttpActionResult EaBankAccBalanceByHhId(int id)
+        //{
+        //    var transactionsByCategory = DbContext.Households
+        //        .Where(p => p.Id == id)
+        //        .SelectMany(p => p.BankAccounts)
+        //        .Select(n => new EaBankAccDetailViewModel
+        //        {
+        //            BankAccId=n.Id,
+        //            BankAccName = n.Name,
+        //            Amount = n.Balance
+        //        })
+        //        .ToList();
 
-            if (!transactionsByCategory.Any())
-            {
-                return NotFound();
-            }
+        //    if (!transactionsByCategory.Any())
+        //    {
+        //        return NotFound();
+        //    }
 
-            var currentUserId = User.Identity.GetUserId();
-            bool isJoined = DbContext
-                .Households
-                .Where(p => p.Id == id)
-                .Any(a => a.JoinedUsers
-                .Any(b => b.Id == currentUserId));
+        //    var currentUserId = User.Identity.GetUserId();
+        //    bool isJoined = DbContext
+        //        .Households
+        //        .Where(p => p.Id == id)
+        //        .Any(a => a.JoinedUsers
+        //        .Any(b => b.Id == currentUserId));
 
-            if (!isJoined)
-            {
-                return Unauthorized();
-            }
+        //    if (!isJoined)
+        //    {
+        //        return Unauthorized();
+        //    }
 
-            return Ok(transactionsByCategory);
-        }
+        //    return Ok(transactionsByCategory);
+        //}
 
-        [HttpGet]
-        public IHttpActionResult GetTranSumByBaIdByCat(int id)
-        {
-            var currentUserId = User.Identity.GetUserId();
-            var myTranscation = DbContext.BankAccounts
-                .Where(p => p.Id == id &&
-                        (p.Household.OwnerId == currentUserId
-                        || p.Household.JoinedUsers.Any(c => c.Id == currentUserId)
-                        ))
-                        .SelectMany(p => p.Transactions)
-                        .GroupBy(p => p.CategoryId)
-                .Select(c => new TranscationHouseholdViewModel
-                {
-                    CategoryId = c.Key,
-                    Amount = c.Sum(d=> (decimal)d.Amount)
-                })
-                .ToList();
+        //[HttpGet]
+        //public IHttpActionResult GetTranSumByBaIdByCat(int id)
+        //{
+        //    var currentUserId = User.Identity.GetUserId();
+        //    var myTranscation = DbContext.BankAccounts
+        //        .Where(p => p.Id == id &&
+        //                (p.Household.OwnerId == currentUserId
+        //                || p.Household.JoinedUsers.Any(c => c.Id == currentUserId)
+        //                ))
+        //                .SelectMany(p => p.Transactions)
+        //                .GroupBy(p => p.CategoryId)
+        //        .Select(c => new TranscationHouseholdViewModel
+        //        {
+        //            CategoryId = c.Key,
+        //            Amount = c.Sum(d=> (decimal)d.Amount)
+        //        })
+        //        .ToList();
 
-            if (myTranscation == null)
-            {
-                return NotFound();
-            }
+        //    if (myTranscation == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return Ok(myTranscation);
-        }
+        //    return Ok(myTranscation);
+        //}
 
         [HttpGet]
         public IHttpActionResult GetCreatedByHhId(int id)

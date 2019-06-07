@@ -32,9 +32,6 @@ namespace HouseholdBudgeterAPI.App_Start
                 .ForMember(p => p.Name, b => b.MapFrom(c => c.Household.Name))
                 .ForMember(p => p.TotalBalance, b => b.MapFrom(c => c.Household.BankAccounts.Sum(p => p.Balance)))
                 .ReverseMap();
-                //cfg.CreateMap<Transaction, TranscationHouseholdViewModel>()
-                //    .ForMember(p => p.TotalAmount, b => b.MapFrom(c => c.b))
-                //    .ReverseMap();
 
             });
         }
