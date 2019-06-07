@@ -109,8 +109,11 @@ namespace HouseholdBudgeterAPI.Controllers
         [HttpGet]
         public IHttpActionResult GetAllByHhId(int id)
         {
+            var currentUserId = User.Identity.GetUserId();
+
             var allCategoriesModel = DbContext.Households
-                .Where(p => p.Id == id)
+                .Where(p => p.Id == id && p.JoinedUsers
+                .Any(b => b.Id == currentUserId))
                 .SelectMany(b => b.Categories)
                 .ProjectTo<CategoryViewModel>()
                 .ToList();
@@ -118,18 +121,6 @@ namespace HouseholdBudgeterAPI.Controllers
             if (!allCategoriesModel.Any())
             {
                 return NotFound();
-            }
-
-            var currentUserId = User.Identity.GetUserId();
-            bool isJoined = DbContext
-                .Households
-                .Where(p => p.Id == id)
-                .Any(a => a.JoinedUsers
-                .Any(b => b.Id == currentUserId));
-
-            if (!isJoined)
-            {
-                return Unauthorized();
             }
 
             return Ok(allCategoriesModel);
@@ -157,8 +148,11 @@ namespace HouseholdBudgeterAPI.Controllers
         [HttpGet]
         public IHttpActionResult GetAllByHhBaId(int id)
         {
+            var currentUserId = User.Identity.GetUserId();
 
             var categoriesSameHh = DbContext.Categories
+                .Where(p => p.Household.OwnerId == currentUserId ||
+                p.Household.JoinedUsers.Any(b => b.Id == currentUserId))
                 .Where(p => p.Household.BankAccounts
                 .Any(b=> b.Id == id))
                 .ProjectTo<CategoryViewModel>()

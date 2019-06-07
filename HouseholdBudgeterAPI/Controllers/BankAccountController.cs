@@ -65,7 +65,7 @@ namespace HouseholdBudgeterAPI.Controllers
             var viewModel = Mapper.Map<BankAccountViewModel>(bankAccount);
 
             var url = Url.Link("DefaultApi",
-                new { Action = "GetAllByHhId"});
+                new { Action = "GetAllByHhId" });
 
             return Created(url, viewModel);
         }
@@ -138,11 +138,11 @@ namespace HouseholdBudgeterAPI.Controllers
         {
             var allBankAccountModel = DbContext.Households
                 .Where(p => p.Id == id)
-                .SelectMany(p=> p.BankAccounts)
+                .SelectMany(p => p.BankAccounts)
                 .ProjectTo<BankAccountHouseholdViewModel>()
                 .FirstOrDefault();
 
-            if (allBankAccountModel== null)
+            if (allBankAccountModel == null)
             {
                 return NotFound();
             }
@@ -162,23 +162,35 @@ namespace HouseholdBudgeterAPI.Controllers
             return Ok(allBankAccountModel);
         }
 
-
         [HttpGet]
-        public IHttpActionResult BigEaBankAccBalanceByHhId(int id)
+        public IHttpActionResult OneStepBankAccBalanceByHhId(int id)
         {
             var currentUserId = User.Identity.GetUserId();
 
-            var allBankAccs = DbContext.Households
-                .Where(p => p.Id == id && (
-                p.JoinedUsers.Any(b => b.Id == currentUserId) 
-                || p.OwnerId == currentUserId)
+            //var allBankAccs = DbContext.Transactions
+            //    .Where(p => p.BankAccount.HouseholdId == id && (
+            //    p.BankAccount.Household.JoinedUsers.Any(b => b.Id == currentUserId)
+            //    || p.BankAccount.Household.OwnerId == currentUserId)
+            //    )
+
+
+            var allBankAccs = DbContext.BankAccounts
+                .Where(p => p.HouseholdId == id && (
+                p.Household.JoinedUsers.Any(b => b.Id == currentUserId)
+                || p.Household.OwnerId == currentUserId)
                 )
-                .SelectMany(p => p.BankAccounts)
                 .Select(n => new BigEaBankAccDetailViewModel
                 {
                     BankAccId = n.Id,
                     BankAccName = n.Name,
-                    Amount = n.Balance
+                    Amount = n.Balance,
+                    TransAmtByCats = n.Transactions
+                    .GroupBy(p => p.Category.Name)
+                    .Select(m => new TransAmtByCatViewModel
+                    {
+                        CategoryName = m.Key,
+                        Amount = m.Sum(d => (decimal)d.Amount)
+                    }).ToList()
                 })
                 .ToList();
 
@@ -187,87 +199,8 @@ namespace HouseholdBudgeterAPI.Controllers
                 return NotFound();
             }
 
-            foreach(var ba in allBankAccs)
-            {
-                var myTranscation = DbContext.BankAccounts
-              .Where(p => p.Id == ba.BankAccId &&
-                      (p.Household.OwnerId == currentUserId
-                      || p.Household.JoinedUsers.Any(c => c.Id == currentUserId)
-                      ))
-                      .SelectMany(p => p.Transactions)
-                      .GroupBy(p => p.Category.Name)
-              .Select(c => new TransAmtByCatViewModel
-              {
-                  CategoryName = c.Key,
-                  Amount = c.Sum(d => (decimal)d.Amount)
-              })
-              .ToList();
-
-                ba.TransAmtByCats=myTranscation;
-            }
-
             return Ok(allBankAccs);
         }
-
-        //[HttpGet]
-        //public IHttpActionResult EaBankAccBalanceByHhId(int id)
-        //{
-        //    var transactionsByCategory = DbContext.Households
-        //        .Where(p => p.Id == id)
-        //        .SelectMany(p => p.BankAccounts)
-        //        .Select(n => new EaBankAccDetailViewModel
-        //        {
-        //            BankAccId=n.Id,
-        //            BankAccName = n.Name,
-        //            Amount = n.Balance
-        //        })
-        //        .ToList();
-
-        //    if (!transactionsByCategory.Any())
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var currentUserId = User.Identity.GetUserId();
-        //    bool isJoined = DbContext
-        //        .Households
-        //        .Where(p => p.Id == id)
-        //        .Any(a => a.JoinedUsers
-        //        .Any(b => b.Id == currentUserId));
-
-        //    if (!isJoined)
-        //    {
-        //        return Unauthorized();
-        //    }
-
-        //    return Ok(transactionsByCategory);
-        //}
-
-        //[HttpGet]
-        //public IHttpActionResult GetTranSumByBaIdByCat(int id)
-        //{
-        //    var currentUserId = User.Identity.GetUserId();
-        //    var myTranscation = DbContext.BankAccounts
-        //        .Where(p => p.Id == id &&
-        //                (p.Household.OwnerId == currentUserId
-        //                || p.Household.JoinedUsers.Any(c => c.Id == currentUserId)
-        //                ))
-        //                .SelectMany(p => p.Transactions)
-        //                .GroupBy(p => p.CategoryId)
-        //        .Select(c => new TranscationHouseholdViewModel
-        //        {
-        //            CategoryId = c.Key,
-        //            Amount = c.Sum(d=> (decimal)d.Amount)
-        //        })
-        //        .ToList();
-
-        //    if (myTranscation == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return Ok(myTranscation);
-        //}
 
         [HttpGet]
         public IHttpActionResult GetCreatedByHhId(int id)
@@ -314,7 +247,7 @@ namespace HouseholdBudgeterAPI.Controllers
 
             var allBankAccounts = DbContext.BankAccounts
                 .Where(p => p.Household.JoinedUsers
-                .Any(b=> b.Id == currentUserId) 
+                .Any(b => b.Id == currentUserId)
                 || p.Household.OwnerId == currentUserId)
                 .ProjectTo<BankAccountViewModel>()
                 .ToList();
