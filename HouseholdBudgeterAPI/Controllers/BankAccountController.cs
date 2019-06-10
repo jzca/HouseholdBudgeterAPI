@@ -167,13 +167,6 @@ namespace HouseholdBudgeterAPI.Controllers
         {
             var currentUserId = User.Identity.GetUserId();
 
-            //var allBankAccs = DbContext.Transactions
-            //    .Where(p => p.BankAccount.HouseholdId == id && (
-            //    p.BankAccount.Household.JoinedUsers.Any(b => b.Id == currentUserId)
-            //    || p.BankAccount.Household.OwnerId == currentUserId)
-            //    )
-
-
             var allBankAccs = DbContext.BankAccounts
                 .Where(p => p.HouseholdId == id && (
                 p.Household.JoinedUsers.Any(b => b.Id == currentUserId)
@@ -185,6 +178,7 @@ namespace HouseholdBudgeterAPI.Controllers
                     BankAccName = n.Name,
                     Amount = n.Balance,
                     TransAmtByCats = n.Transactions
+                    .Where(p=> p.IsVoid == false)
                     .GroupBy(p => p.Category.Name)
                     .Select(m => new TransAmtByCatViewModel
                     {

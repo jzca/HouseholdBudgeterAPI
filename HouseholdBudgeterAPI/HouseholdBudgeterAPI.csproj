@@ -240,7 +240,6 @@
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ViewModel\BankAccountHouseholdViewModel.cs" />
     <Compile Include="Models\ViewModel\BigEaBankAccDetailViewModel.cs" />
-    <Compile Include="Models\ViewModel\EaBankAccDetailViewModel.cs" />
     <Compile Include="Models\ViewModel\BankAccTransDetailViewModel.cs" />
     <Compile Include="Models\ViewModel\BankAccountViewModel.cs" />
     <Compile Include="Models\ViewModel\CategoryViewModel.cs" />
@@ -248,7 +247,6 @@
     <Compile Include="Models\ViewModel\HouseholdViewModel.cs" />
     <Compile Include="Models\ViewModel\ShowUsersViewModel.cs" />
     <Compile Include="Models\ViewModel\TransAmtByCatViewModel.cs" />
-    <Compile Include="Models\ViewModel\TranscationHouseholdViewModel.cs" />
     <Compile Include="Models\ViewModel\TranscationDetailViewModel.cs" />
     <Compile Include="Models\ViewModel\TranscationViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
